@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import rootRedcuer from "./rootRedcuer";
+import rootReducer from "./rootRedcuer";
 import { authApi } from "@/features/api/authApi";
 
 export const appStore = configureStore({
-    reducer: rootRedcuer,
-    middleware: (defaultMiddleware) => defaultMiddleware().concat(authApi.middleware)
+    reducer: rootReducer,
+    middleware:(defaultMiddlewarw) => defaultMiddlewarw().concat(authApi.middleware)
 });
