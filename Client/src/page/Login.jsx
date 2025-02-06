@@ -30,8 +30,8 @@ const Login = () => {
   });
 
   // Mutation hooks for login and signup
-  const [registerUser, { isLoading: registerIsLoading }] = useRegisterUserMutation();
-  const [loginUser, { isLoading: loginIsLoading }] = useLoginUserMutation();
+  const [registerUser, { isLoading: registerIsLoading, data: registerData, error: registerError, isSuccess: registerIsSuccess }] = useRegisterUserMutation();
+  const [loginUser, { isLoading: loginIsLoading, data: loginData, error: loginError, isSuccess: loginIsSuccess }] = useLoginUserMutation();
 
   // Handle input changes
   const changeInputHandler = (e, type) => {
@@ -53,6 +53,8 @@ const Login = () => {
       console.error("Error:", error);
     }
   };
+
+
 
   return (
     <div className="flex items-center w-full justify-center">
