@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from "react";
 import { useLoginUserMutation, useRegisterUserMutation } from "@/features/api/authApi";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   // State for Login inputs
@@ -54,7 +55,21 @@ const Login = () => {
     }
   };
 
-
+  // Show toast notifications
+  useEffect(() => {
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup is successful.");
+    }
+    if (registerError) {
+      toast.error(registerError.data?.message || "Signup failed.");
+    }
+    if (loginIsSuccess && loginData) {
+      toast.success(loginData.message || "Login is successful.");
+    }
+    if (loginError) {
+      toast.error(loginError.data?.message || "Login failed.");
+    }
+  }, [registerIsSuccess, registerError, loginIsSuccess, loginError]);
 
   return (
     <div className="flex items-center w-full justify-center">
