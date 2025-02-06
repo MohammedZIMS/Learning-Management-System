@@ -12,19 +12,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React from "react";
+import { useLoginUserMutation, useRegisterUserMutation } from "@/features/api/authApi";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
+  // State for Login inputs
   const [loginInput, setLoginInput] = useState({
     email: "",
     password: "",
   });
 
+  // State for Signup inputs
   const [signupInput, setSignupInput] = useState({
     name: "",
     email: "",
     password: "",
   });
 
+  // Mutation hooks for login and signup
+  const [registerUser, { isLoading: registerIsLoading }] = useRegisterUserMutation();
+  const [loginUser, { isLoading: loginIsLoading }] = useLoginUserMutation();
+
+  // Handle input changes
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
     if (type === "signup") {
@@ -34,14 +43,20 @@ const Login = () => {
     }
   };
 
-  const handleRegistration = async (type) =>{
+  // Handle login and registration requests
+  const handleRegistration = async (type) => {
     const inputData = type === "signup" ? signupInput : loginInput;
-    console.log(inputData);
-  }
+    const action = type === "signup" ? registerUser : loginUser;
+    try {
+      await action(inputData).unwrap(); // Ensures better error handling
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   return (
     <div className="flex items-center w-full justify-center">
-      <Tabs defaultValue="account" className="w-[400px]">
+      <Tabs defaultValue="login" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="signup">Signup</TabsTrigger>
@@ -50,9 +65,7 @@ const Login = () => {
           <Card>
             <CardHeader>
               <CardTitle>Login</CardTitle>
-              <CardDescription>
-                Login with your credentials. After signup, you'll be logged in.
-              </CardDescription>
+              <CardDescription>Login with your credentials.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
@@ -80,7 +93,16 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleRegistration("login")}>Login</Button>
+              <Button disabled={loginIsLoading} onClick={() => handleRegistration("login")}>
+                {loginIsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                ) : (
+                  "Login"
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -88,9 +110,7 @@ const Login = () => {
           <Card>
             <CardHeader>
               <CardTitle>Signup</CardTitle>
-              <CardDescription>
-                Create a new account and click signup when you're done.
-              </CardDescription>
+              <CardDescription>Create a new account below.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="space-y-1">
@@ -129,7 +149,15 @@ const Login = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => handleRegistration("signup")}>Signup</Button>
+              <Button disabled={registerIsLoading} onClick={() => handleRegistration("signup")}>
+                {registerIsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
+                  </>
+                ) : (
+                  "Signup"
+                )}
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
