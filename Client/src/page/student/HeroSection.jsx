@@ -11,7 +11,7 @@ const HeroSection = () => {
         backgroundSize: 'cover',
       }}
     >
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative">
         <div className="space-y-8 mb-12 animate-fade-in-up">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
             Transform Your Future Through
