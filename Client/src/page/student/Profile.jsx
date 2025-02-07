@@ -30,7 +30,7 @@ const Profile = () => {
             <div className="border-b dark:border-gray-800 pb-4 mb-8">
                 <h1 className="font-bold text-3xl flex items-center gap-3">
                     <SquareUser className="w-8 h-8 text-blue-600" />
-                    My Learning
+                    My Profile
                 </h1>
             </div>
 
@@ -104,9 +104,9 @@ const Profile = () => {
                             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Account Type</h3>
                                 <div className="flex items-center gap-2">
-                                    <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+                                    <p className="font-medium">
                                         Student
-                                    </Badge>
+                                    </p>
                                 </div>
                             </div>
                         </div>
