@@ -21,6 +21,7 @@ import {
   import React from "react";
   import DarkMode from "@/DarkMode";
   import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Link } from "react-router-dom";
   
   const Navbar = () => {
     const user = true; // Simulate user authentication state (false = not logged in)
@@ -50,7 +51,7 @@ import {
                 <DropdownMenuContent className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>My Learning</DropdownMenuItem>
+                  <DropdownMenuItem><Link to="my-learning">My Learning</Link></DropdownMenuItem>
                   <DropdownMenuItem>Edit Profile</DropdownMenuItem>
                   <DropdownMenuItem>Dashboard</DropdownMenuItem>
                   <DropdownMenuSeparator />
