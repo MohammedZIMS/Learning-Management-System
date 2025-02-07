@@ -3,6 +3,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'; // Impor
 import MainLayout from './layout/MainLayout';
 import Login from './page/Login';
 import HeroSection from './page/student/HeroSection';
+import Courses from './page/student/Courses';
+import MyLearning from './page/student/MyLearning';
 
 const appRouter = createBrowserRouter([
   {
@@ -14,13 +16,17 @@ const appRouter = createBrowserRouter([
         element: (
           <>
             <HeroSection />
-            {/* <Course /> */} {/* Placeholder for future course component */}
+            <Courses/> {/* Placeholder for future course component */}
           </>
         ),
       },
       {
         path: 'login',
-        element: <Login />,
+        element: <Login/>,
+      },
+      {
+        path: 'my-learning',
+        element: <MyLearning/>,
       },
     ],
   },
