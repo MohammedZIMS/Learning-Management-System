@@ -14,15 +14,16 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
 import Course from './Course';
-// import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-// import { Skeleton } from "@/components/ui/skeleton";
-
+import { data } from 'react-router-dom';
+import { useLoadUserQuery } from '@/features/api/authApi';
 
 
 const Profile = () => {
-    const isLoading = false;
-    const enrolledCourses = [1, 2, 3];
+    const { data, isLoading } = useLoadUserQuery();
+
+    if (isLoading) return <h1>Your profile is loading...</h1>
+
+    const { user } = data;
 
     return (
         <div className='max-w-6xl mx-auto px-4 md:px-6 my-24'>
@@ -41,7 +42,7 @@ const Profile = () => {
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg">
                         <div className="flex flex-col items-center mb-6">
                             <Avatar className="h-32 w-32 mb-4 border-4 border-blue-100 dark:border-gray-700">
-                                <AvatarImage src="https://github.com/shadcn.png" />
+                                <AvatarImage src={user.photoUrl || "https://github.com/shadcn.png"} alt="Profile Photo" />
                                 <AvatarFallback className="text-2xl">MZ</AvatarFallback>
                             </Avatar>
 
@@ -95,17 +96,17 @@ const Profile = () => {
                         <div className="space-y-4">
                             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Name</h3>
-                                <p className="font-medium">Mohammed ZIMS</p>
+                                <p className="font-medium" style={{ textTransform: 'capitalize' }}>{user.name}</p>
                             </div>
                             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Email</h3>
-                                <p className="font-medium">zims@gmail.com</p>
+                                <p className="font-medium">{user.email}</p>
                             </div>
                             <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
                                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Account Type</h3>
                                 <div className="flex items-center gap-2">
-                                    <p className="font-medium">
-                                        Student
+                                    <p className="font-medium" style={{ textTransform: 'capitalize' }}>
+                                        {user.role}
                                     </p>
                                 </div>
                             </div>
@@ -121,7 +122,7 @@ const Profile = () => {
                             <h2 className="text-2xl font-bold">Enrolled Courses</h2>
                         </div>
 
-                        {enrolledCourses.length === 0 ? (
+                        {user.enrolledCourses.length === 0 ? (
                             <div className="flex flex-col items-center justify-center min-h-[300px] text-center py-12">
                                 <div className="mb-6 p-6 bg-blue-100 dark:bg-blue-900 rounded-full">
                                     <BookOpen className="w-16 h-16 text-blue-600 dark:text-blue-400" />
@@ -136,8 +137,8 @@ const Profile = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {enrolledCourses.map((course, index) => (
-                                    <Course key={index} className="hover:shadow-lg transition-shadow" />
+                                {enrolledCourses.map((course) => (
+                                    <Course course={course} key={course._id} className="hover:shadow-lg transition-shadow" />
                                 ))}
                             </div>
                         )}
