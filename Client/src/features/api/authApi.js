@@ -10,6 +10,7 @@ export const authApi = createApi({
     credentials: "include", // Ensures cookies are sent with requests
     mode: "cors", // Explicitly setting CORS mode
   }),
+
   endpoints: (builder) => ({
     registerUser: builder.mutation({
       query: (inputData) => ({
@@ -21,6 +22,7 @@ export const authApi = createApi({
         },
       }),
     }),
+
     loginUser: builder.mutation({
       query: (inputData) => ({
         url: "login",
@@ -30,6 +32,7 @@ export const authApi = createApi({
           "Content-Type": "application/json",
         },
       }),
+
       async onQueryStarted(_, { queryFulfilled, dispatch }) {
         try {
           const { data } = await queryFulfilled;
@@ -41,7 +44,22 @@ export const authApi = createApi({
         }
       },
     }),
+
+    loadUser: builder.query({
+      query: () => ({
+        url: "profile",
+        method: "GET"
+      }),
+      async onQueryStarted(_, { queryFulfilled, dispatch }) {
+        try {
+          const result = await queryFulfilled;
+          dispatch(userLoggedIn({ user: result.data.user }));
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    })
   }),
 });
 
-export const { useRegisterUserMutation, useLoginUserMutation } = authApi;
+export const { useRegisterUserMutation, useLoginUserMutation, useLoadUserQuery } = authApi;
