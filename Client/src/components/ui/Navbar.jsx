@@ -17,30 +17,32 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { School, Menu } from "lucide-react";
+import { School, Menu, Store } from "lucide-react";
 import React, { useEffect } from "react";
 import DarkMode from "@/DarkMode";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
 import { useLogoutUserMutation } from "@/features/api/authApi";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const user = true; // Simulate user authentication state (false = not logged in)
+  const { user } = useSelector(Store => Store.auth);
   const navigate = useNavigate();
   // const role = "instructor"; // Simulate user role (e.g., "instructor" or "student")
-  const [logoutUser, {data, isSuccess}] = useLogoutUserMutation();
+  const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
 
   const logoutHandler = async () => {
     await logoutUser();
   }
 
-  useEffect(()=>{
+
+  useEffect(() => {
     if (isSuccess) {
       toast.success(data.message || "User is logout.");
       navigate("/login");
     }
-  },[isSuccess])
+  }, [isSuccess])
 
   return (
     <div className="h-16 dark:bg-[#0A0A0A] bg-white border-b dark:border-b-gray-800 border-b-gray-200 fixed top-0 left-0 right-0 duration-300 z-10">
@@ -59,8 +61,10 @@ const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>MyProfile</AvatarFallback>
+                  <AvatarImage src={user.photoUrl ||"https://github.com/shadcn.png"} />
+                  <AvatarFallback>
+                    {user?.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
@@ -82,7 +86,7 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/">
-                <DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
