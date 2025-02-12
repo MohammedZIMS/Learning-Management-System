@@ -29,7 +29,6 @@ import { useSelector } from "react-redux";
 const Navbar = () => {
   const { user } = useSelector(Store => Store.auth);
   const navigate = useNavigate();
-  // const role = "instructor"; // Simulate user role (e.g., "instructor" or "student")
   const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
 
   const logoutHandler = async () => {
@@ -99,8 +98,8 @@ const Navbar = () => {
           ) : (
             // If user is not logged in, show login and signup buttons
             <div className="flex items-center gap-2">
-              <Button variant="outline">Login</Button>
-              <Button>Signup</Button>
+              <Button variant="outline" onClick={() => navigate("/login")}>Login</Button>
+              <Button onClick={() => navigate("/login")}>Signup</Button>
             </div>
           )}
           {/* Dark Mode Toggle */}
