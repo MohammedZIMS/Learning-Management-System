@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { userLoggedIn } from "../authSlice";
+import { userLoggedIn, userLoggedOut } from "../authSlice";
 
 const USER_API = "http://localhost:8081/api/v1/user/";
 
@@ -37,10 +37,26 @@ export const authApi = createApi({
         try {
           const { data } = await queryFulfilled;
           if (data?.user) {
-            dispatch(userLoggedIn({ user: data.user })); // Ensure `user` exists before dispatching
+            dispatch(userLoggedIn({ user: data.user })); // Ensure user exists before dispatching
           }
         } catch (error) {
           console.error("Login failed:", error); // Improved error logging
+        }
+      },
+    }),
+    logoutUser: builder.mutation({
+      query: () => ({
+        url: "logout",
+        method: "GET"
+      }),
+      async onQueryStarted(_, { queryFulfilled, dispatch }) {
+        try {
+          dispatch(userLoggedOut());
+          if (data?.user) {
+            dispatch(userLoggedIn({ user: data.user }));
+          }
+        } catch (error) {
+          console.error("Login failed:", error);
         }
       },
     }),
@@ -64,13 +80,19 @@ export const authApi = createApi({
       query: (formData) => ({
         url: "profile/update",
         method: "PUT",
-        body: "formData",
+        body: formData,
         credentials: "include"
       }),
 
     })
-    
+
   }),
 });
 
-export const { useRegisterUserMutation, useLoginUserMutation, useLoadUserQuery, useUpdateUserMutation } = authApi;
+export const {
+  useRegisterUserMutation,
+  useLoginUserMutation,
+  useLogoutUserMutation,
+  useLoadUserQuery,
+  useUpdateUserMutation
+} = authApi;
