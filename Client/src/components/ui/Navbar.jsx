@@ -17,7 +17,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { School, Menu, Store } from "lucide-react";
+import { School, Menu } from "lucide-react";
 import React, { useEffect } from "react";
 import DarkMode from "@/DarkMode";
 import { Separator } from "@radix-ui/react-dropdown-menu";
@@ -27,21 +27,20 @@ import { toast } from "sonner";
 import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const { user } = useSelector(Store => Store.auth);
+  const { user } = useSelector(state => state.auth); // Fixed Store => state
   const navigate = useNavigate();
-  const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
+  const [logoutUser, { isSuccess }] = useLogoutUserMutation();
 
   const logoutHandler = async () => {
     await logoutUser();
   }
 
-
   useEffect(() => {
     if (isSuccess) {
-      toast.success(data.message || "User is logout.");
+      toast.success("Logged out successfully");
       navigate("/login");
     }
-  }, [isSuccess])
+  }, [isSuccess, navigate]);
 
   return (
     <div className="h-16 dark:bg-[#0A0A0A] bg-white border-b dark:border-b-gray-800 border-b-gray-200 fixed top-0 left-0 right-0 duration-300 z-10">
@@ -56,17 +55,16 @@ const Navbar = () => {
         {/* User Icon and Dark Mode Toggle */}
         <div className="flex items-center gap-2">
           {user ? (
-            // If user is logged in, show dropdown menu with user options
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar>
-                  <AvatarImage src={user.photoUrl ||"https://github.com/shadcn.png"} />
+                  <AvatarImage src={user.photoUrl || "https://github.com/shadcn.png"} />
                   <AvatarFallback>
                     {user?.name.split(" ").map((n) => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
+              <DropdownMenuContent className="w-56 dark:bg-gray-900">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <Link to="/">
@@ -74,35 +72,46 @@ const Navbar = () => {
                     Home
                   </DropdownMenuItem>
                 </Link>
-                <Link to="my-learning">
+                <Link to="/my-learning">
                   <DropdownMenuItem className="cursor-pointer">
                     My Learning
                   </DropdownMenuItem>
                 </Link>
-                <Link to="profile">
+                <Link to="/profile">
                   <DropdownMenuItem className="cursor-pointer">
                     Profile
                   </DropdownMenuItem>
                 </Link>
-                <Link to="/">
-                  <DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem>
-                </Link>
+                {user?.role === "instructor" ? (
+                  <Link to="/">
+                    <DropdownMenuItem className="cursor-pointer">
+                      Instructor Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                ) : (
+                  <Link to="/">
+                    <DropdownMenuItem className="cursor-pointer">
+                      Student Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Button onClick={logoutHandler} type="submit" className="bg-red-500 text-white w-full">
+                  <Button 
+                    onClick={logoutHandler} 
+                    className="bg-red-500 hover:bg-red-600 text-white w-full"
+                  >
                     Logout
                   </Button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            // If user is not logged in, show login and signup buttons
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => navigate("/login")}>Login</Button>
               <Button onClick={() => navigate("/login")}>Signup</Button>
             </div>
           )}
-          {/* Dark Mode Toggle */}
           <DarkMode />
         </div>
       </div>
@@ -113,8 +122,7 @@ const Navbar = () => {
           <School size={30} />
           <h1 className="font-extrabold text-2xl">Shikha Bazar</h1>
         </div>
-        {/* Mobile Navigation Menu */}
-        <MobileNavbar user={user} />
+        <MobileNavbar user={user} logoutHandler={logoutHandler} />
       </div>
     </div>
   );
@@ -122,9 +130,8 @@ const Navbar = () => {
 
 export default Navbar;
 
-// MobileNavbar Component
-const MobileNavbar = ({ user }) => {
-  const role = "instructor"; // Simulate user role (e.g., "instructor" or "student")
+const MobileNavbar = ({ user, logoutHandler }) => {
+  const navigate = useNavigate();
 
   return (
     <Sheet>
@@ -133,27 +140,60 @@ const MobileNavbar = ({ user }) => {
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col">
+      <SheetContent className="flex flex-col dark:bg-gray-900 dark:text-white">
         <SheetHeader className="flex flex-row items-center justify-between mt-2">
-          <SheetTitle>Shikha Bazar</SheetTitle>
+          <SheetTitle className="dark:text-white">Shikha Bazar</SheetTitle>
         </SheetHeader>
-        <Separator className="mr-2" />
-        {/* Navigation Options */}
-        <nav className="flex flex-col space-y-4">
-          <span>My Learning</span>
-          <span>Profile</span>
-          <p>Dashboard</p>
+        <Separator className="my-4 dark:border-gray-700" />
+        
+        <nav className="flex flex-col space-y-4 flex-grow">
+          <SheetClose asChild>
+            <Link to="/" className="hover:text-blue-500">Home</Link>
+          </SheetClose>
+          
+          {user && (
+            <>
+              <SheetClose asChild>
+                <Link to="/my-learning" className="hover:text-blue-500">My Learning</Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link to="/profile" className="hover:text-blue-500">Profile</Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link to={user?.role === "instructor" ? "/instructor-dashboard" : "/student-dashboard"} 
+                      className="hover:text-blue-500">
+                  Dashboard
+                </Link>
+              </SheetClose>
+            </>
+          )}
         </nav>
-        {/* Logout Button for Instructors */}
-        {role === "instructor" && (
-          <SheetFooter>
+
+        <SheetFooter className="mt-auto">
+          {user ? (
             <SheetClose asChild>
-              <Button type="submit" className="bg-red-500 text-white">
+              <Button 
+                onClick={logoutHandler}
+                className="bg-red-500 hover:bg-red-600 text-white w-full"
+              >
                 Logout
               </Button>
             </SheetClose>
-          </SheetFooter>
-        )}
+          ) : (
+            <div className="flex flex-col gap-2 w-full">
+              <SheetClose asChild>
+                <Button onClick={() => navigate("/login")} className="w-full">
+                  Login
+                </Button>
+              </SheetClose>
+              <SheetClose asChild>
+                <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                  Signup
+                </Button>
+              </SheetClose>
+            </div>
+          )}
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );
