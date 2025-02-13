@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import Course from './Course';
 import { useLoadUserQuery, useUpdateUserMutation } from '@/features/api/authApi';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   // Local state for updating profile info
@@ -65,7 +66,9 @@ const Profile = () => {
 
   if (isLoading) return <h1>Profile Loading...</h1>;
 
-  const user = data?.user;
+  const user = data && data.user;
+
+  const navigator = useNavigate();
 
   return (
     <div className='max-w-6xl mx-auto px-4 md:px-6 my-24'>
@@ -190,7 +193,7 @@ const Profile = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   You haven't enrolled in any courses yet
                 </p>
-                <Button className="gap-2">Browse Courses</Button>
+                <Button className="gap-2" onClick={()=> navigator(`/course`)}>Browse Courses</Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
