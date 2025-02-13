@@ -98,7 +98,7 @@ const InstructorSidebar = () => {
         </h4>
         <nav className="space-y-1">
           <Link 
-            to="/dashboard/create-course" 
+            to="/dashboard/instructor-course/create-course" 
             className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
           >
             <BookOpen size={20} className="text-yellow-500" />
