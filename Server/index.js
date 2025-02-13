@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import connectDB  from "./Database/database.js";
 import userRoute from "./Routes/userRoute.js";
+import courseRoute from "./Routes/courseRoute.js"
 
 dotenv.config();
 
@@ -22,8 +23,9 @@ app.use(cors({
   credentials:true
 }));
 
-// api
+// apis
 app.use("/api/v1/user", userRoute);
+app.use("/api/v1/course", courseRoute);
 
 
 app.listen(PORT, () => {
