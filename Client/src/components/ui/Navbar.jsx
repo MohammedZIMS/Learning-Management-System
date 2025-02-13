@@ -83,13 +83,13 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </Link>
                 {user?.role === "instructor" ? (
-                  <Link to="/">
+                  <Link to="/dashboard">
                     <DropdownMenuItem className="cursor-pointer">
                       Instructor Dashboard
                     </DropdownMenuItem>
                   </Link>
                 ) : (
-                  <Link to="/">
+                  <Link to="/dashboard">
                     <DropdownMenuItem className="cursor-pointer">
                       Student Dashboard
                     </DropdownMenuItem>
