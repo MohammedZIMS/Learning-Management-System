@@ -1,5 +1,5 @@
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -8,15 +8,71 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { UploadCloud } from 'lucide-react'
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Loader2, UploadCloud } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const AddCourse = () => {
+  const [courseTitle, setCourseTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [thumbnail, setThumbnail] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
+
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      setThumbnail(file);
+    }
+  };
+
+  const createCourseHandler = async () => {
+    console.log(courseTitle, category, description, thumbnail);
+    // if (!courseTitle || !category || !description || !thumbnail) {
+    //   toast.error("Please fill all fields and upload a thumbnail");
+    //   return;  
+    // }
+
+    setIsLoading(true);
+
+    try {
+      // Simulate API call
+      const formData = new FormData();
+      formData.append("courseTitle", courseTitle);
+      formData.append("category", category);
+      formData.append("description", description);
+      formData.append("thumbnail", thumbnail);
+
+      // Example API call (replace with your actual API endpoint)
+      // const response = await axios.post('/api/courses', formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data'
+      //   }
+      // });
+
+      // Simulate success
+      setTimeout(() => {
+        setIsLoading(false);
+        toast.success("Course created successfully!");
+        navigate("/dashboard/instructor-course");
+      }, 2000);
+    } catch (error) {
+      setIsLoading(false);
+      toast.error("Failed to create course. Please try again.");
+      console.error(error);
+    }
+  };
+
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
       {/* Header Section */}
@@ -34,9 +90,11 @@ const AddCourse = () => {
         {/* Course Title */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Title</Label>
-          <Input 
-            type="text" 
-            placeholder="Enter Course Title" 
+          <Input
+            type="text"
+            value={courseTitle}
+            onChange={(e) => setCourseTitle(e.target.value)}
+            placeholder="Enter Course Title"
             className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
           />
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -47,7 +105,7 @@ const AddCourse = () => {
         {/* Course Category */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Category</Label>
-          <Select>
+          <Select onValueChange={(value) => setCategory(value)}>
             <SelectTrigger className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
@@ -75,6 +133,8 @@ const AddCourse = () => {
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Description</Label>
           <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what students will learn in this course..."
             className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 min-h-[150px]"
           />
@@ -94,26 +154,51 @@ const AddCourse = () => {
                   <span className="font-semibold">Click to upload</span>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG, or JPEG
+                  PNG, JPG, or JPEG (Max: 5MB)
                 </p>
+                {thumbnail && (
+                  <p className="text-sm text-green-500 mt-2">
+                    {thumbnail.name} uploaded
+                  </p>
+                )}
               </div>
-              <input type="file" accept="image/*" />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleThumbnailChange}
+                className="hidden"
+              />
             </label>
           </div>
         </div>
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => navigate("/dashboard/instructor-course")}>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/dashboard/instructor-course")}
+            disabled={isLoading}
+          >
             Back
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all">
-            Create Course
+          <Button 
+            disabled={isLoading} 
+            onClick={createCourseHandler} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Please wait
+              </>
+            ) : (
+              "Create Course"
+            )}
           </Button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AddCourse
+export default AddCourse;
