@@ -9,22 +9,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Loader2, UploadCloud } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useCreateCourseMutation } from '@/features/api/courseApi'; // Correct hook name
 
 const AddCourse = () => {
   const [courseTitle, setCourseTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
+  // Initialize the mutation hook
+  const [createCourse, { data, isLoading, error, isSuccess }] = useCreateCourseMutation();
+
+  // Handler to set the selected category
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+  };
+
+  // Handler to update thumbnail from file input
   const handleThumbnailChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -36,42 +45,20 @@ const AddCourse = () => {
     }
   };
 
+  // Function to handle course creation
   const createCourseHandler = async () => {
-    console.log(courseTitle, category, description, thumbnail);
-    // if (!courseTitle || !category || !description || !thumbnail) {
-    //   toast.error("Please fill all fields and upload a thumbnail");
-    //   return;  
-    // }
 
-    setIsLoading(true);
-
-    try {
-      // Simulate API call
-      const formData = new FormData();
-      formData.append("courseTitle", courseTitle);
-      formData.append("category", category);
-      formData.append("description", description);
-      formData.append("thumbnail", thumbnail);
-
-      // Example API call (replace with your actual API endpoint)
-      // const response = await axios.post('/api/courses', formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // });
-
-      // Simulate success
-      setTimeout(() => {
-        setIsLoading(false);
-        toast.success("Course created successfully!");
-        navigate("/dashboard/instructor-course");
-      }, 2000);
-    } catch (error) {
-      setIsLoading(false);
-      toast.error("Failed to create course. Please try again.");
-      console.error(error);
-    }
+    await createCourse({ courseTitle, category });
   };
+
+  // Listen for success or error changes from the mutation
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success(data?.message || "Course created.");
+      navigate("/dashboard/instructor-course");
+
+    }
+  }, [isSuccess, error])
 
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
@@ -105,7 +92,7 @@ const AddCourse = () => {
         {/* Course Category */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Category</Label>
-          <Select onValueChange={(value) => setCategory(value)}>
+          <Select onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
@@ -113,6 +100,7 @@ const AddCourse = () => {
               <SelectGroup>
                 <SelectLabel className="text-gray-500 dark:text-gray-400">Categories</SelectLabel>
                 <SelectItem value="data-science">Data Science</SelectItem>
+                <SelectItem value="artificial-intelligence">Artificial Intelligence</SelectItem>
                 <SelectItem value="frontend">Frontend Development</SelectItem>
                 <SelectItem value="fullstack">Fullstack Development</SelectItem>
                 <SelectItem value="mern">MERN Stack Development</SelectItem>
@@ -121,6 +109,7 @@ const AddCourse = () => {
                 <SelectItem value="docker">Docker</SelectItem>
                 <SelectItem value="mongodb">MongoDB</SelectItem>
                 <SelectItem value="html">HTML</SelectItem>
+                <SelectItem value="css">CSS</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -157,14 +146,12 @@ const AddCourse = () => {
                   PNG, JPG, or JPEG (Max: 5MB)
                 </p>
                 {thumbnail && (
-                  <p className="text-sm text-green-500 mt-2">
-                    {thumbnail.name} uploaded
-                  </p>
+                  <p className="text-sm text-green-500 mt-2">{thumbnail.name} uploaded</p>
                 )}
               </div>
-              <input 
-                type="file" 
-                accept="image/*" 
+              <input
+                type="file"
+                accept="image/*"
                 onChange={handleThumbnailChange}
                 className="hidden"
               />
@@ -174,21 +161,21 @@ const AddCourse = () => {
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate("/dashboard/instructor-course")}
             disabled={isLoading}
           >
             Back
           </Button>
-          <Button 
-            disabled={isLoading} 
-            onClick={createCourseHandler} 
+          <Button
+            disabled={isLoading}
+            onClick={createCourseHandler}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all"
           >
             {isLoading ? (
               <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Please wait
               </>
             ) : (
