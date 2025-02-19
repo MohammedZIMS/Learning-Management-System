@@ -47,8 +47,9 @@ const AddCourse = () => {
 
   // Function to handle course creation
   const createCourseHandler = async () => {
-
-    await createCourse({ courseTitle, category });
+    // console.log("Course Title: ", courseTitle, "\nCategory: ", category,"\nDescription: ", description, "\nThumbnail: ", thumbnail);
+    
+    await createCourse({ courseTitle,  category});
   };
 
   // Listen for success or error changes from the mutation
@@ -56,7 +57,9 @@ const AddCourse = () => {
     if (isSuccess) {
       toast.success(data?.message || "Course created.");
       navigate("/dashboard/instructor-course");
-
+    }
+    if(error) {
+      toast.error(error.message || "Failed to create course.")
     }
   }, [isSuccess, error])
 
@@ -119,7 +122,7 @@ const AddCourse = () => {
         </div>
 
         {/* Course Description */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Description</Label>
           <Textarea
             value={description}
@@ -130,10 +133,10 @@ const AddCourse = () => {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Be clear and concise. Highlight the key takeaways.
           </p>
-        </div>
+        </div> */}
 
         {/* Course Thumbnail Upload */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Thumbnail</Label>
           <div className="flex items-center justify-center w-full">
             <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -157,7 +160,7 @@ const AddCourse = () => {
               />
             </label>
           </div>
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
