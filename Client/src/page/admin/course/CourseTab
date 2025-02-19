@@ -1,3 +1,4 @@
+import RichTextEditor from "@/components/RichTextEditor";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -7,6 +8,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -21,6 +23,16 @@ import { Loader2, UploadCloud } from "lucide-react";
 import React, { useState } from "react";
 
 const CourseTab = () => {
+    const navigate = useNavigate();
+    const [input, setInput] = useState({
+        courseTitle: "",
+        subTitle: "",
+        description: "",
+        category: "",
+        courseLevel: "",
+        coursePrice: "",
+        courseThumbnail: "",
+    })
     const isPublished = true;
     const [thumbnail, setThumbnail] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -96,11 +108,12 @@ const CourseTab = () => {
                         {/* Description */}
                         <div className="space-y-2">
                             <Label className="text-gray-700 dark:text-gray-300">Description</Label>
-                            <textarea
+                            <RichTextEditor input={input} setInput={setInput} />
+                            {/* <textarea
                                 className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                 rows={5}
                                 placeholder="Enter your course description"
-                            />
+                            /> */}
                         </div>
 
                         {/* Category, Level, and Price */}
