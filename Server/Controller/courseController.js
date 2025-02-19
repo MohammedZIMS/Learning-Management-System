@@ -60,3 +60,15 @@ export const getCreatorCourses = async (req, res) => {
     });
   }
 };
+
+export const editCourse = async (req, res) => {
+  try {
+    const { courseTitle, subTitle, description, category, courseLevel, coursePrice} = req.body;
+    
+  } catch (error) {
+    console.error("Error edit courses:", error);
+    return res.status(500).json({
+      message: "Failed to edit courses. Please try again."
+    });
+  }
+};
