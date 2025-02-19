@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import React from 'react';
 import { useGetCreatorCoursesQuery } from "@/features/api/courseApi";
@@ -51,15 +52,15 @@ const CourseTable = () => {
                 {course?.coursePrice ? `$${course.coursePrice}` : "NA"}
               </TableCell>
               <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${
+                <Badge
+                  className={`px-2 py-1 rounded-full text-sm hover:text-white ${
                     course.isPublished
                       ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                       : "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
                   }`}
                 >
                   {course.isPublished ? "Published" : "Draft"}
-                </span>
+                </Badge>
               </TableCell>
               <TableCell className="text-gray-800 dark:text-gray-200">
                 {course.courseTitle}
@@ -72,16 +73,6 @@ const CourseTable = () => {
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3} className="text-gray-700 dark:text-gray-300">
-              Total
-            </TableCell>
-            <TableCell className="text-right text-gray-800 dark:text-gray-200">
-              $2,500.00
-            </TableCell>
-          </TableRow>
-        </TableFooter>
       </Table>
     </div>
   );
