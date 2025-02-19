@@ -66,7 +66,12 @@ const CourseTable = () => {
                 {course.courseTitle}
               </TableCell>
               <TableCell className="text-right">
-                <Button size="sm" variant="ghost" className="text-gray-600 dark:text-gray-400">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => navigate(`${course._id}`)}
+                  className="text-gray-600 dark:text-gray-400"
+                >
                   <Edit className="h-4 w-4" />
                 </Button>
               </TableCell>
