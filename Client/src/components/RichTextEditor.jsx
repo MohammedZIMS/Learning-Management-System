@@ -8,7 +8,7 @@ const RichTextEditor = ({input, setInput}) => {
         setInput({... input, description:content});
     }
 
-    return <ReactQuill theme="snow" value={input.description} onChange={handleChane} />;
+    return <ReactQuill theme="snow" value={input.description} onChange={handleChane} placeholder="Describe what students will learn in this course..." />;
 
 }
 
