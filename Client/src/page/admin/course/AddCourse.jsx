@@ -21,12 +21,24 @@ const AddCourse = () => {
   const [courseTitle, setCourseTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnail, setThumbnail] = useState("");
+  // State for thumbnail preview URL
+  const [previewThumbnail, setPreviewThumbnail] = useState("");
 
   const navigate = useNavigate();
 
   // Initialize the mutation hook
   const [createCourse, { data, isLoading, error, isSuccess }] = useCreateCourseMutation();
+
+  const [input, setInput] = useState({
+          courseTitle: "",
+          subTitle: "",
+          description: "",
+          category: "",
+          courseLevel: "",
+          coursePrice: "",
+          courseThumbnail: "",
+      });
 
   // Handler to set the selected category
   const handleCategoryChange = (value) => {
@@ -34,22 +46,26 @@ const AddCourse = () => {
   };
 
   // Handler to update thumbnail from file input
-  const handleThumbnailChange = (e) => {
+  const handleThumbnailSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error("File size must be less than 5MB");
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
         return;
       }
-      setThumbnail(file);
     }
+    setInput({ ...input, courseThumbnail: file });
+    // Convert file to base64 for preview
+    const fileReader = new FileReader();
+    fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
+    fileReader.readAsDataURL(file);
   };
 
   // Function to handle course creation
   const createCourseHandler = async () => {
     // console.log("Course Title: ", courseTitle, "\nCategory: ", category,"\nDescription: ", description, "\nThumbnail: ", thumbnail);
-    
-    await createCourse({ courseTitle,  category});
+
+    await createCourse({ courseTitle, category });
   };
 
   // Listen for success or error changes from the mutation
@@ -58,7 +74,7 @@ const AddCourse = () => {
       toast.success(data?.message || "Course created.");
       navigate("/dashboard/instructor-course");
     }
-    if(error) {
+    if (error) {
       toast.error(error.message || "Failed to create course.")
     }
   }, [isSuccess, error])
@@ -122,7 +138,7 @@ const AddCourse = () => {
         </div>
 
         {/* Course Description */}
-        {/* <div className="space-y-2">
+        <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Description</Label>
           <Textarea
             value={description}
@@ -130,37 +146,51 @@ const AddCourse = () => {
             placeholder="Describe what students will learn in this course..."
             className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 min-h-[150px]"
           />
+
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Be clear and concise. Highlight the key takeaways.
           </p>
-        </div> */}
+        </div>
 
         {/* Course Thumbnail Upload */}
-        {/* <div className="space-y-2">
-          <Label className="text-sm font-medium dark:text-gray-300">Course Thumbnail</Label>
+        <div className="space-y-2">
+          <Label className="text-gray-700 dark:text-gray-300">Course Thumbnail</Label>
           <div className="flex items-center justify-center w-full">
             <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span>
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG, or JPEG (Max: 5MB)
-                </p>
-                {thumbnail && (
-                  <p className="text-sm text-green-500 mt-2">{thumbnail.name} uploaded</p>
-                )}
-              </div>
+              {previewThumbnail ? (
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <p className="text-sm text-green-500 mt-2">
+                    {input.courseThumbnail?.name} uploaded
+                  </p>
+                  <img
+                    src={previewThumbnail}
+                    className="w-64 my-2 rounded-md shadow h-32"
+                    alt="Course Thumbnail"
+                  />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Click to change thumbnail
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span>
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    PNG, JPG, or JPEG (Max: 5MB)
+                  </p>
+                </div>
+              )}
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleThumbnailChange}
+                onChange={handleThumbnailSelect}
                 className="hidden"
               />
             </label>
           </div>
-        </div> */}
+        </div>
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
