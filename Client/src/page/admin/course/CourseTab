@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -21,10 +21,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, UploadCloud } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useEditCourseMutation } from "@/features/api/courseApi";
+import { toast } from 'sonner';
 
 const CourseTab = () => {
     const navigate = useNavigate();
+
+    const params = useParams();
+    const courseId = params.courseId;
+
+    const [editCourse, { data, isLoading: courseLoading, isSuccess, error }] = useEditCourseMutation();
 
     // State to hold course fields
     const [input, setInput] = useState({
@@ -34,7 +41,7 @@ const CourseTab = () => {
         category: "",
         courseLevel: "",
         coursePrice: "",
-        courseThumbnail: null,
+        courseThumbnail: "",
     });
 
     // State for thumbnail preview URL
@@ -48,15 +55,12 @@ const CourseTab = () => {
         const { name, value } = e.target;
         setInput({ ...input, [name]: value });
     };
-
-    // Update category from select component
+    // Select Dropdown Handlers
     const selectCategory = (value) => {
-        setInput((prev) => ({ ...prev, category: value }));
+        setInput({ ...input, category: value });
     };
-
-    // Update course level from select component
     const selectCourseLevel = (value) => {
-        setInput((prev) => ({ ...prev, courseLevel: value }));
+        setInput({ ...input, courseLevel: value });
     };
 
     // Handle file selection and set preview
@@ -67,39 +71,48 @@ const CourseTab = () => {
                 alert("File size must be less than 5MB");
                 return;
             }
-            setInput((prev) => ({ ...prev, courseThumbnail: file }));
+            setInput({ ...input, courseThumbnail: file });
+            // Convert file to base64 for preview
             const fileReader = new FileReader();
             fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
             fileReader.readAsDataURL(file);
         }
     };
 
-    // Save handler simulating API call
-    const handleSave = () => {
-        // Validate required fields
-        if (
-            !input.courseTitle ||
-            !input.category ||
-            !input.description ||
-            !input.courseThumbnail
-        ) {
-            alert("Please fill all fields and upload a thumbnail");
+    // Handle Course Update
+    const updataCourseHandler = async () => {
+        if (!input.courseTitle || !input.category) {
+            toast.error("Please fill all required fields.");
             return;
         }
-
-        setIsLoading(true);
-        // Simulate an API call delay
-        setTimeout(() => {
-            setIsLoading(false);
-            alert("Course saved successfully!");
-            navigate("/dashboard/instructor-course");
-        }, 2000);
-    };
-
-    const updataCourseHandler = () => {
-        console.log(input);
         
+        console.log(input);
+
+        // FormData to send file along with text fields
+        const formData = new FormData();
+        formData.append("Course Title: ", input.courseTitle);
+        formData.append("\nCourse SubTitle: ", input.subTitle);
+        formData.append("\nDescription: ", input.description);
+        formData.append("\nCourse Category: ", input.category);
+        formData.append("\nCourse Level: ", input.courseLevel);
+        formData.append("\nCourse Price: ", input.coursePrice);
+        formData.append("\nCourse Thumbnail: ", input.courseThumbnail);
+
+        // Call API Mutation
+        await editCourse({ formData, courseId });
     }
+
+    // Handle API Response
+    useEffect(() => {
+        if (isSuccess) {
+            toast.success(data?.message || "Course updated successfully.");
+            // navigate("/dashboard/instructor-course");
+        }
+        if (error) {
+            toast.error(error?.data?.message || "Failed to update. Please try again.");
+        }
+    }, [isSuccess, error, data, navigate]);
+
 
     return (
         <div className="p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
@@ -210,7 +223,7 @@ const CourseTab = () => {
                                 />
                             </div>
                         </div>
-                        
+
                         {/* Thumbnail Upload */}
                         <div className="space-y-2">
                             <Label className="text-gray-700 dark:text-gray-300">Course Thumbnail</Label>
