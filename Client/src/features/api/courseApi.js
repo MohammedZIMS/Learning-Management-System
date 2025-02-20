@@ -18,7 +18,7 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
-    // Other endpoints can be added here...
+    
     getCreatorCourses: builder.query({
       query: () => ({
         url: "",
@@ -26,8 +26,20 @@ export const courseApi = createApi({
       }),
       providesTags: ["Refetch_Creator_Course"],
     }),
+
+    editCourse: builder.mutation({
+      query: (formData) => ({
+        url: "",
+        method: "PUT",
+        body: formData,
+      }),
+    }),
   }),
 });
 
 // Export the correctly named hook.
-export const { useCreateCourseMutation, useGetCreatorCoursesQuery } = courseApi;
+export const { 
+  useCreateCourseMutation, 
+  useGetCreatorCoursesQuery, 
+  useEditCourseMutation 
+} = courseApi;
