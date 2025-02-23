@@ -82,13 +82,13 @@ const InstructorSidebar = () => {
             <SquareLibrary size={20} className="text-green-500" />
             <span>My Courses</span>
           </Link>
-          <Link 
+          {/* <Link 
             to="/dashboard/students" 
             className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
           >
             <Users size={20} className="text-purple-500" />
             <span>Students</span>
-          </Link>
+          </Link> */}
         </nav>
       </div>
 
