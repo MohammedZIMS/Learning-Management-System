@@ -18,66 +18,78 @@ import { toast } from 'sonner';
 import { useCreateCourseMutation } from '@/features/api/courseApi'; // Correct hook name
 
 const AddCourse = () => {
-  const [courseTitle, setCourseTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
-  const [thumbnail, setThumbnail] = useState("");
-  // State for thumbnail preview URL
-  const [previewThumbnail, setPreviewThumbnail] = useState("");
-
   const navigate = useNavigate();
 
-  // Initialize the mutation hook
+  // Initialize mutation hook
   const [createCourse, { data, isLoading, error, isSuccess }] = useCreateCourseMutation();
 
+  // State for course data
   const [input, setInput] = useState({
-          courseTitle: "",
-          subTitle: "",
-          description: "",
-          category: "",
-          courseLevel: "",
-          coursePrice: "",
-          courseThumbnail: "",
-      });
+    courseTitle: "",
+    category: "",
+    description: "",
+    courseThumbnail: null,
+  });
 
-  // Handler to set the selected category
-  const handleCategoryChange = (value) => {
-    setCategory(value);
+  // State for thumbnail preview
+  const [previewThumbnail, setPreviewThumbnail] = useState("");
+
+  // Handler for input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setInput({ ...input, [name]: value });
   };
 
-  // Handler to update thumbnail from file input
+  // Handler for category selection
+  const handleCategoryChange = (value) => {
+    setInput({ ...input, category: value });
+  };
+
+  // Handler for thumbnail upload
   const handleThumbnailSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
         return;
       }
+      setInput({ ...input, courseThumbnail: file });
+
+      // Preview thumbnail
+      const fileReader = new FileReader();
+      fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
+      fileReader.readAsDataURL(file);
     }
-    setInput({ ...input, courseThumbnail: file });
-    // Convert file to base64 for preview
-    const fileReader = new FileReader();
-    fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
-    fileReader.readAsDataURL(file);
   };
 
   // Function to handle course creation
   const createCourseHandler = async () => {
-    // console.log("Course Title: ", courseTitle, "\nCategory: ", category,"\nDescription: ", description, "\nThumbnail: ", thumbnail);
+    if (!input.courseTitle || !input.category || !input.description || !input.courseThumbnail) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
 
-    await createCourse({ courseTitle, category });
+    // Create FormData object
+    const formData = new FormData();
+    formData.append("courseTitle", input.courseTitle);
+    formData.append("category", input.category);
+    formData.append("description", input.description);
+    formData.append("courseThumbnail", input.courseThumbnail);
+
+    // Call the mutation
+    await createCourse(formData);
   };
 
-  // Listen for success or error changes from the mutation
+  // Handle API response
   useEffect(() => {
     if (isSuccess) {
-      toast.success(data?.message || "Course created.");
+      toast.success(data?.message || "Course created successfully.");
       navigate("/dashboard/instructor-course");
     }
     if (error) {
-      toast.error(error.message || "Failed to create course.")
+      toast.error(error?.data?.message || "Failed to create course.");
     }
-  }, [isSuccess, error])
+  }, [isSuccess, error, data, navigate]);
 
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
@@ -98,14 +110,12 @@ const AddCourse = () => {
           <Label className="text-sm font-medium dark:text-gray-300">Course Title</Label>
           <Input
             type="text"
-            value={courseTitle}
-            onChange={(e) => setCourseTitle(e.target.value)}
+            name="courseTitle"
+            value={input.courseTitle}
+            onChange={handleInputChange}
             placeholder="Enter Course Title"
             className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800"
           />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Make it descriptive and engaging to attract students.
-          </p>
         </div>
 
         {/* Course Category */}
@@ -125,31 +135,21 @@ const AddCourse = () => {
                 <SelectItem value="mern">MERN Stack Development</SelectItem>
                 <SelectItem value="javascript">JavaScript</SelectItem>
                 <SelectItem value="python">Python</SelectItem>
-                <SelectItem value="docker">Docker</SelectItem>
-                <SelectItem value="mongodb">MongoDB</SelectItem>
-                <SelectItem value="html">HTML</SelectItem>
-                <SelectItem value="css">CSS</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Choose the most relevant category for your course.
-          </p>
         </div>
 
         {/* Course Description */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Description</Label>
           <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            name="description"
+            value={input.description}
+            onChange={handleInputChange}
             placeholder="Describe what students will learn in this course..."
             className="w-full p-3 rounded-lg border-gray-300 dark:border-gray-700 dark:bg-gray-800 min-h-[150px]"
           />
-
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Be clear and concise. Highlight the key takeaways.
-          </p>
         </div>
 
         {/* Course Thumbnail Upload */}
@@ -158,62 +158,22 @@ const AddCourse = () => {
           <div className="flex items-center justify-center w-full">
             <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               {previewThumbnail ? (
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <p className="text-sm text-green-500 mt-2">
-                    {input.courseThumbnail?.name} uploaded
-                  </p>
-                  <img
-                    src={previewThumbnail}
-                    className="w-64 my-2 rounded-md shadow h-32"
-                    alt="Course Thumbnail"
-                  />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Click to change thumbnail
-                  </p>
-                </div>
+                <img src={previewThumbnail} className="w-64 my-2 rounded-md shadow h-32" alt="Course Thumbnail" />
               ) : (
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG, or JPEG (Max: 5MB)
-                  </p>
-                </div>
+                <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
               )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleThumbnailSelect}
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
             </label>
           </div>
         </div>
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/dashboard/instructor-course")}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => navigate("/dashboard/instructor-course")} disabled={isLoading}>
             Back
           </Button>
-          <Button
-            disabled={isLoading}
-            onClick={createCourseHandler}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : (
-              "Create Course"
-            )}
+          <Button onClick={createCourseHandler} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all">
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Course"}
           </Button>
         </div>
       </div>
