@@ -158,9 +158,30 @@ const AddCourse = () => {
           <div className="flex items-center justify-center w-full">
             <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               {previewThumbnail ? (
-                <img src={previewThumbnail} className="w-64 my-2 rounded-md shadow h-32" alt="Course Thumbnail" />
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <p className="text-sm text-green-500 mt-2">
+                    {input.courseThumbnail?.name} uploaded
+                  </p>
+                  <img
+                    src={previewThumbnail}
+                    className="w-64 h-32 my-2 rounded-md shadow"
+                    alt="Course Thumbnail"
+                    height={130}
+                  />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Click to change thumbnail
+                  </p>
+                </div>
               ) : (
-                <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span>
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    PNG, JPG, or JPEG (Max: 5MB)
+                  </p>
+                </div>
               )}
               <input type="file" accept="image/*" onChange={handleThumbnailSelect} className="hidden" />
             </label>
