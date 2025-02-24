@@ -19,19 +19,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from '@/components/ui/textarea';
 import { Loader2, UploadCloud } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useEditCourseMutation } from "@/features/api/courseApi";
+import { useEditCourseMutation, useGetCourseByIdQuery } from "@/features/api/courseApi";
 import { toast } from 'sonner';
 
 const CourseTab = () => {
     const navigate = useNavigate();
-
-    const params = useParams();
-    const courseId = params.courseId;
-
-    const [editCourse, { data, isLoading: courseLoading, isSuccess, error }] = useEditCourseMutation();
 
     // State to hold course fields
     const [input, setInput] = useState({
@@ -43,6 +37,30 @@ const CourseTab = () => {
         coursePrice: "",
         courseThumbnail: "",
     });
+
+    const params = useParams();
+    const courseId = params.courseId;
+
+    // Fetch course details by ID
+    const { data: courseByIdData, isLoading: courseByIdLoading, refetch } = useGetCourseByIdQuery(courseId);
+
+    useEffect(() => {
+        if (courseByIdData?.course) {
+            const course = courseByIdData.course;
+            setInput({
+                courseTitle: course.courseTitle,
+                subTitle: course.subTitle,
+                description: course.description,
+                category: course.category,
+                courseLevel: course.courseLevel,
+                coursePrice: course.coursePrice,
+                courseThumbnail: "",
+            });
+        }
+    }, [courseByIdData]);
+
+    const [editCourse, { data, isLoading: courseLoading, isSuccess, error }] = useEditCourseMutation();
+
 
     // State for thumbnail preview URL
     const [previewThumbnail, setPreviewThumbnail] = useState("");
@@ -71,12 +89,12 @@ const CourseTab = () => {
                 alert("File size must be less than 5MB");
                 return;
             }
-            setInput({ ...input, courseThumbnail: file });
-            // Convert file to base64 for preview
-            const fileReader = new FileReader();
-            fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
-            fileReader.readAsDataURL(file);
         }
+        setInput({ ...input, courseThumbnail: file });
+        // Convert file to base64 for preview
+        const fileReader = new FileReader();
+        fileReader.onloadend = () => setPreviewThumbnail(fileReader.result);
+        fileReader.readAsDataURL(file);
     };
 
     // Handle Course Update
@@ -85,18 +103,19 @@ const CourseTab = () => {
             toast.error("Please fill all required fields.");
             return;
         }
-        
+
         console.log(input);
 
         // FormData to send file along with text fields
         const formData = new FormData();
-        formData.append("Course Title: ", input.courseTitle);
-        formData.append("\nCourse SubTitle: ", input.subTitle);
-        formData.append("\nDescription: ", input.description);
-        formData.append("\nCourse Category: ", input.category);
-        formData.append("\nCourse Level: ", input.courseLevel);
-        formData.append("\nCourse Price: ", input.coursePrice);
-        formData.append("\nCourse Thumbnail: ", input.courseThumbnail);
+        formData.append("courseTitle", input.courseTitle);
+        formData.append("category", input.category);
+        formData.append("description", input.description);
+        formData.append("courseLevel", input.courseLevel); 
+        formData.append("coursePrice", input.coursePrice); 
+        if (input.courseThumbnail) {
+            formData.append("courseThumbnail", input.courseThumbnail); // ✅ Field name matches backend
+        }
 
         // Call API Mutation
         await editCourse({ formData, courseId });
@@ -106,7 +125,7 @@ const CourseTab = () => {
     useEffect(() => {
         if (isSuccess) {
             toast.success(data?.message || "Course updated successfully.");
-            // navigate("/dashboard/instructor-course");
+            navigate("/dashboard/instructor-course");
         }
         if (error) {
             toast.error(error?.data?.message || "Failed to update. Please try again.");
@@ -174,23 +193,14 @@ const CourseTab = () => {
                                     </SelectTrigger>
                                     <SelectContent className="rounded-lg shadow-lg dark:bg-gray-800">
                                         <SelectGroup>
-                                            <SelectLabel>Category</SelectLabel>
-                                            <SelectItem value="Next JS">Next JS</SelectItem>
-                                            <SelectItem value="Data Science">Data Science</SelectItem>
-                                            <SelectItem value="Frontend Development">
-                                                Frontend Development
-                                            </SelectItem>
-                                            <SelectItem value="Fullstack Development">
-                                                Fullstack Development
-                                            </SelectItem>
-                                            <SelectItem value="MERN Stack Development">
-                                                MERN Stack Development
-                                            </SelectItem>
-                                            <SelectItem value="Javascript">Javascript</SelectItem>
-                                            <SelectItem value="Python">Python</SelectItem>
-                                            <SelectItem value="Docker">Docker</SelectItem>
-                                            <SelectItem value="MongoDB">MongoDB</SelectItem>
-                                            <SelectItem value="HTML">HTML</SelectItem>
+                                            <SelectLabel className="text-gray-500 dark:text-gray-400">Categories</SelectLabel>
+                                            <SelectItem value="data-science">Data Science</SelectItem>
+                                            <SelectItem value="artificial-intelligence">Artificial Intelligence</SelectItem>
+                                            <SelectItem value="frontend">Frontend Development</SelectItem>
+                                            <SelectItem value="fullstack">Fullstack Development</SelectItem>
+                                            <SelectItem value="mern">MERN Stack Development</SelectItem>
+                                            <SelectItem value="javascript">JavaScript</SelectItem>
+                                            <SelectItem value="python">Python</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -206,7 +216,7 @@ const CourseTab = () => {
                                             <SelectLabel>Course Level</SelectLabel>
                                             <SelectItem value="Beginner">Beginner</SelectItem>
                                             <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                            <SelectItem value="Advance">Advance</SelectItem>
+                                            <SelectItem value="Advanced">Advance</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -236,7 +246,7 @@ const CourseTab = () => {
                                             </p>
                                             <img
                                                 src={previewThumbnail}
-                                                className="w-64 my-2 rounded-md shadow"
+                                                className="w-64 h-32 my-2 rounded-md shadow"
                                                 alt="Course Thumbnail"
                                                 height={130}
                                             />
@@ -269,17 +279,17 @@ const CourseTab = () => {
                         <div className="flex justify-end gap-4">
                             <Button
                                 variant="outline"
-                                disabled={isLoading}
+                                disabled={courseLoading}
                                 onClick={() => navigate("/dashboard/instructor-course")}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 onClick={updataCourseHandler}
-                                disabled={isLoading}
+                                disabled={courseLoading}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all"
                             >
-                                {isLoading ? (
+                                {courseLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Saving...
