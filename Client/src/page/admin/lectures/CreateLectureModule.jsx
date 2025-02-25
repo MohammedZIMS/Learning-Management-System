@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import LectureModule from './LectureModule';
-import { useCreateLectureModuleMutation } from '@/features/api/courseApi';
+import { useCreateLectureModuleMutation, useGetCouseLectureModuleQuery } from '@/features/api/courseApi';
 import { toast } from 'sonner';
 
 const CreateLectureModule = () => {
@@ -18,6 +18,8 @@ const CreateLectureModule = () => {
     // Correctly use the mutation hook
     const [createLectureModule, { data, isLoading, isSuccess, error }] = useCreateLectureModuleMutation();
 
+    const { data: lectureData, isLoading: lectureLoading, isError: lectureError, refetch } = useGetCouseLectureModuleQuery(courseId);
+
     // Handle creating a new lecture module
     const LectureModulehandle = async () => {
         try {
@@ -27,12 +29,13 @@ const CreateLectureModule = () => {
         }
     };
 
+    console.log(lectureData);
+
+
     // Handle API Response
     useEffect(() => {
         if (isSuccess) {
             toast.success(data?.message || "Lecture module created successfully.");
-            // setLectures([...lectures, { _id: Date.now(), lectureTitle }]); // Simulate new lecture
-            // setLectureTitle(""); // Clear input after successful creation
         }
         if (error) {
             toast.error(error?.message || "Failed to create lecture module.");
@@ -94,15 +97,30 @@ const CreateLectureModule = () => {
                         </div>
 
                         {/* Display Lecture Modules */}
-                        {/* <div className="mt-6">
-                            {lectures.length > 0 ? (
-                                lectures.map((lecture, index) => (
-                                    <LectureModule key={lecture._id} lecture={lecture} courseId={courseId} index={index} />
-                                ))
-                            ) : (
-                                <p className="text-gray-500 dark:text-gray-400">No lecture modules added yet.</p>
-                            )}
-                        </div> */}
+                        <div className="mt-6">
+                            {
+                                lectureLoading ? 
+                                ( 
+                                    <p>Loading lectures...</p> 
+                                ) : lectureError ? 
+                                ( 
+                                    <p>Failed to load lectures.</p> 
+                                ) : lectureData.lectures.length === 0 ? 
+                                ( 
+                                    <p className="text-gray-500 dark:text-gray-400">No lecture modules added yet.</p> 
+                                ) : 
+                                ( 
+                                    lectureData.lectures.map((lecture, index) => (
+                                        <LectureModule 
+                                            key={lecture._id} 
+                                            lecture={lecture}
+                                            courseId={courseId}
+                                            index={index}
+                                        /> 
+                                    ))
+                                )
+                            }
+                        </div>
                     </div>
                 </CardContent>
             </Card>
