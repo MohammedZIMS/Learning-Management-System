@@ -11,14 +11,14 @@ export const courseApi = createApi({
   }),
   endpoints: (builder) => ({
     createCourse: builder.mutation({
-      query: ({ courseTitle, category }) => ({
+      query: (formData) => ({
         url: "",
         method: "POST",
-        body: { courseTitle, category },
+        body: formData,
       }),
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
-    
+
     getCreatorCourses: builder.query({
       query: () => ({
         url: "",
@@ -27,19 +27,40 @@ export const courseApi = createApi({
       providesTags: ["Refetch_Creator_Course"],
     }),
 
+    getCourseById: builder.query({  
+      query: (courseId) => ({
+        url: `/${courseId}`,
+        method: "GET",
+      }),
+      providesTags: ["Refetch_Creator_Course"],
+    }),
+
     editCourse: builder.mutation({
-      query: (formData) => ({
-        url: "",
+      query: ({ formData, courseId }) => ({
+        url: `/${courseId}`,
         method: "PUT",
         body: formData,
       }),
+      invalidatesTags: ["Refetch_Creator_Course"],
     }),
+
+    createLectureModule: builder.mutation({
+      query: ({lectureTitle, courseId}) => ({
+        url: `/${courseId}/lecture-module`,
+        method: "POST",
+        body: {lectureTitle}
+      })
+    })
+
+    
   }),
 });
 
-// Export the correctly named hook.
+// Export hooks correctly
 export const { 
   useCreateCourseMutation, 
   useGetCreatorCoursesQuery, 
-  useEditCourseMutation 
+  useGetCourseByIdQuery,  
+  useEditCourseMutation,
+  useCreateLectureModuleMutation
 } = courseApi;
