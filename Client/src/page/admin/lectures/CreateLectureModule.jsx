@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,30 +6,38 @@ import { Label } from '@/components/ui/label';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import LectureModule from './LectureModule';
+import { useCreateLectureModuleMutation } from '@/features/api/courseApi';
+import { toast } from 'sonner';
 
 const CreateLectureModule = () => {
-    const navigate = useNavigate();
-    const { courseId } = useParams(); // Get courseId from URL params
-    const [isLoading, setIsLoading] = useState(false);
     const [lectureTitle, setLectureTitle] = useState("");
-    const [lectures, setLectures] = useState([]); // Store list of lectures
+    const params = useParams();
+    const courseId = params.courseId; // Get courseId from URL params
+    const navigate = useNavigate();
 
-    const handleSaveLectureModule = () => {
-        if (!lectureTitle) {
-            alert("Please enter a lecture module title.");
-            return;
+    // Correctly use the mutation hook
+    const [createLectureModule, { data, isLoading, isSuccess, error }] = useCreateLectureModuleMutation();
+
+    // Handle creating a new lecture module
+    const LectureModulehandle = async () => {
+        try {
+            await createLectureModule({ lectureTitle, courseId });
+        } catch (error) {
+            console.error("Error creating lecture module:", error);
         }
-
-        setIsLoading(true);
-
-        // Simulate saving data
-        setTimeout(() => {
-            setIsLoading(false);
-            const newLecture = { _id: Date.now(), lectureTitle };
-            setLectures([...lectures, newLecture]);
-            setLectureTitle("");
-        }, 1000);
     };
+
+    // Handle API Response
+    useEffect(() => {
+        if (isSuccess) {
+            toast.success(data?.message || "Lecture module created successfully.");
+            // setLectures([...lectures, { _id: Date.now(), lectureTitle }]); // Simulate new lecture
+            // setLectureTitle(""); // Clear input after successful creation
+        }
+        if (error) {
+            toast.error(error?.message || "Failed to create lecture module.");
+        }
+    }, [isSuccess, error, data]);
 
     return (
         <div className="p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
@@ -67,11 +75,11 @@ const CreateLectureModule = () => {
                                 disabled={isLoading}
                                 onClick={() => navigate(`/dashboard/instructor-course/${courseId}`)}
                             >
-                                Cancel
+                                Back to Course
                             </Button>
                             <Button
                                 disabled={isLoading}
-                                onClick={handleSaveLectureModule}
+                                onClick={LectureModulehandle}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-all"
                             >
                                 {isLoading ? (
@@ -80,13 +88,13 @@ const CreateLectureModule = () => {
                                         Saving...
                                     </>
                                 ) : (
-                                    "Save"
+                                    "Create"
                                 )}
                             </Button>
                         </div>
 
                         {/* Display Lecture Modules */}
-                        <div className="mt-6">
+                        {/* <div className="mt-6">
                             {lectures.length > 0 ? (
                                 lectures.map((lecture, index) => (
                                     <LectureModule key={lecture._id} lecture={lecture} courseId={courseId} index={index} />
@@ -94,7 +102,7 @@ const CreateLectureModule = () => {
                             ) : (
                                 <p className="text-gray-500 dark:text-gray-400">No lecture modules added yet.</p>
                             )}
-                        </div>
+                        </div> */}
                     </div>
                 </CardContent>
             </Card>
