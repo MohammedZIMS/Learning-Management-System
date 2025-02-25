@@ -49,10 +49,17 @@ export const courseApi = createApi({
         url: `/${courseId}/lecture-module`,
         method: "POST",
         body: {lectureTitle}
-      })
-    })
+      }),
+    }),
 
-    
+    getCouseLectureModule: builder.query({
+      query: (courseId) => ({
+        url: `/${courseId}/lecture-module`,
+        method: "GET",
+      }),
+      providesTags: ["Refetch_Creator_Course"],
+    }),
+
   }),
 });
 
@@ -62,5 +69,6 @@ export const {
   useGetCreatorCoursesQuery, 
   useGetCourseByIdQuery,  
   useEditCourseMutation,
-  useCreateLectureModuleMutation
+  useCreateLectureModuleMutation,
+  useGetCouseLectureModuleQuery
 } = courseApi;
