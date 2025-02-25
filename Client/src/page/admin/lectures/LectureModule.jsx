@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import React from 'react';
 
 // Accept lecture, index, and courseId as props
-const LectureModule = ({ lecture, index, courseId }) => {
+const LectureModule = ({lecture, courseId, index}) => {
     const navigate = useNavigate();
 
     const goToUpdateLecture = () => {
@@ -13,7 +13,7 @@ const LectureModule = ({ lecture, index, courseId }) => {
     return (
         <div className="flex items-center justify-between bg-[#F7F9FA] dark:bg-[#1F1F1F] px-4 py-2 rounded-md my-2">
             <h1 className="font-bold text-gray-800 dark:text-gray-100">
-                Module - {index + 1}: {lecture.lectureTitle}
+                Module - {index+1}: {lecture.lectureTitle}
             </h1>
             <Edit
                 onClick={goToUpdateLecture}
