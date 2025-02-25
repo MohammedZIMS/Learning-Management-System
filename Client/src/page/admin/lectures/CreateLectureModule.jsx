@@ -16,7 +16,7 @@ const CreateLectureModule = () => {
     const navigate = useNavigate();
 
     // Correctly use the mutation hook
-    const [createLectureModule, { data, isLoading, isSuccess, error }] = useCreateLectureModuleMutation();
+    const [createLectureModule, { data, isLoading, isSuccess, error}] = useCreateLectureModuleMutation();
 
     const { data: lectureData, isLoading: lectureLoading, isError: lectureError, refetch } = useGetCouseLectureModuleQuery(courseId);
 
@@ -36,6 +36,7 @@ const CreateLectureModule = () => {
     useEffect(() => {
         if (isSuccess) {
             toast.success(data?.message || "Lecture module created successfully.");
+            refetch(); // Refetch the lecture modules
         }
         if (error) {
             toast.error(error?.message || "Failed to create lecture module.");
