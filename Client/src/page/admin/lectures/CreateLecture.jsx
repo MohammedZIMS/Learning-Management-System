@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, Video, FileText } from 'lucide-react';
+import { Loader2, Video, FileText } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -52,7 +52,7 @@ const CreateLecture = () => {
       toast.success("Lecture created successfully!");
       alert("Lecture created successfully!")
       console.log(lectureTitle, description);
-      
+
     }, 2000);
   };
 
@@ -66,11 +66,21 @@ const CreateLecture = () => {
         <p className="text-gray-600 dark:text-gray-400">
           Add some basic details to get started with your new lecture. You can always edit these later.
         </p>
+
+        <div className="mt-4 md:mt-0 space-x-2">
+          <Button 
+            variant="destructive"
+            onClick={() => navigate(`/dashboard/instructor-course/${courseId}/lecture-module`)}
+          >
+            Remove Lecturer
+          </Button>
+        </div>
+
       </div>
 
       {/* Form Section */}
       <form onSubmit={handleSubmit} className="space-y-6">
-      
+
         {/* Section Lecture Title Module or Create Lecture Title Module */}
 
         {/* Lecture Title */}
@@ -179,7 +189,7 @@ const CreateLecture = () => {
         <div className="flex justify-end gap-2">
           <Button
             variant="outline"
-            onClick={() => navigate(`/instructor-course/${courseId}`)}
+            onClick={() => navigate(`/dashboard/instructor-course/${courseId}/lecture-module`)}
             disabled={isLoading}
           >
             Back to Course
