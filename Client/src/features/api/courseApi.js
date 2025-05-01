@@ -52,12 +52,36 @@ export const courseApi = createApi({
       }),
     }),
 
+    // Query to fetch all lecture modules for a specific course
     getCouseLectureModule: builder.query({
       query: (courseId) => ({
-        url: `/${courseId}/lecture-module`,
+        url: `/${courseId}/modules`,
         method: "GET",
       }),
       providesTags: ["Refetch_Creator_Course"],
+    }),
+
+    // Mutation to create a new lecture within a specific module of a course
+    createLecture: builder.mutation({
+      query: ({ lectureTitle, courseId, moduleId }) => ({
+        url: `/${courseId}/modules/${moduleId}/lectures`,
+        method: "POST",
+        body: { 
+          lectureTitle,
+          courseId,       // Add these to body
+          moduleId       // if backend expects them
+        }
+      }),
+      invalidatesTags: ["Lecture"],
+    }),
+
+    // Query to fetch all lectures within a specific module of a course
+    getLecturesByModule: builder.query({
+      query: ({ courseId, moduleId }) => ({
+        url: `/${courseId}/modules/${moduleId}/lectures`,
+        method: "GET",
+      }),
+      providesTags: ["Lecture"],
     }),
 
   }),
@@ -67,8 +91,10 @@ export const courseApi = createApi({
 export const { 
   useCreateCourseMutation, 
   useGetCreatorCoursesQuery, 
-  useGetCourseByIdQuery,  
+  useGetCourseByIdQuery, 
   useEditCourseMutation,
   useCreateLectureModuleMutation,
-  useGetCouseLectureModuleQuery
+  useGetCouseLectureModuleQuery,
+  useCreateLectureMutation,
+  useGetLecturesByModuleQuery,
 } = courseApi;
