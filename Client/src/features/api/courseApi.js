@@ -45,10 +45,10 @@ export const courseApi = createApi({
     }),
 
     createLectureModule: builder.mutation({
-      query: ({lectureTitle, courseId}) => ({
+      query: ({title, courseId}) => ({
         url: `/${courseId}/lecture-module`,
         method: "POST",
-        body: {lectureTitle}
+        body: {title}
       }),
     }),
 
