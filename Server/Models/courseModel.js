@@ -8,12 +8,8 @@ const courseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    subTitle: {
-      type: String,
-    },
-    description: {
-      type: String,
-    },
+    subTitle: String,
+    description: String,
     category: {
       type: String,
       required: true,
@@ -22,78 +18,66 @@ const courseSchema = new mongoose.Schema(
     courseLevel: {
       type: String,
       enum: ["Beginner", "Intermediate", "Advanced"],
-      default: "Beginner",
     },
     coursePrice: {
       type: Number,
       min: 0,
     },
-    courseThumbnail: {
-      type: String,
-    },
-    enrolledStudents: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    lectures: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Lecture",
-      },
-    ],
-    // The creator of the course (usually an instructor)
+    courseThumbnail: String,
+    enrolledStudents: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    modules: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Module",
+      required: true
+    }],
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: true
     },
     isPublished: {
       type: Boolean,
       default: false,
     },
     ratings: [{
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-      },
-      rating: {
-        type: Number,
-        min: 1,
-        max: 5
-      },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      rating: { type: Number, min: 1, max: 5 },
       comment: String
     }],
-    // New slug field with unique constraint.
     slug: {
       type: String,
       unique: true,
-      // required: true,
     },
     duration: {
       type: Number,
       min: [1, "Duration must be at least 1 hour"],
-    }
+    },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
-// Virtual for average rating
-courseSchema.virtual('averageRating').get(function () {
-  if (this.ratings.length === 0) return 0;
-  const total = this.ratings.reduce((acc, item) => acc + item.rating, 0);
-  return total / this.ratings.length;
+
+// Virtuals
+courseSchema.virtual("averageRating").get(function() {
+  return this.ratings.length 
+    ? this.ratings.reduce((acc, item) => acc + item.rating, 0) / this.ratings.length
+    : 0;
 });
 
-// Virtual for students count
-courseSchema.virtual('studentsCount').get(function () {
+courseSchema.virtual("studentsCount").get(function() {
   return this.enrolledStudents.length;
 });
 
-// Pre-save hook to generate a slug if not provided.
-courseSchema.pre("save", function (next) {
+// Pre-save hook for slug
+courseSchema.pre("save", function(next) {
   if (!this.slug && this.courseTitle) {
     const baseSlug = slugify(this.courseTitle, { lower: true, strict: true });
-    // Append a timestamp to ensure uniqueness.
     this.slug = `${baseSlug}-${Date.now()}`;
   }
   next();
