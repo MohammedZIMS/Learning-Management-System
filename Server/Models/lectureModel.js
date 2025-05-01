@@ -22,6 +22,15 @@ const lectureSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Defaults to not being free preview
     },
+    module: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Module",
+      // required: [true, "Module reference is required"]
+    },
+    order: {
+      type: Number,
+      default: 0
+    }
   },
   { timestamps: true }
 );
