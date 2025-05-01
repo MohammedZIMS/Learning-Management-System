@@ -1,5 +1,6 @@
 import { Course } from "../Models/courseModel.js";
 import { Lecture } from "../Models/lectureModel.js";
+import { Module } from "../Models/moduleModel.js";
 import { deleteMediaFromCloudinary, deleteVideoFromCloudinary, uploadMedia } from "../Utils/cloudinary.js";
 
 // Create a new course
