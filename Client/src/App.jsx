@@ -69,8 +69,8 @@ const appRouter = createBrowserRouter([
             element: <CreateLectureModule/>,
           },
           {
-            path: 'instructor-course/:courseId/lecture-module/lecture/:lecturerId',
-            element: <EditLecture/>,
+            path: 'instructor-course/:courseId/lecture-module/:moduleId/lecture',
+            element: <CreateLecture/>,
           },
           
         ]
