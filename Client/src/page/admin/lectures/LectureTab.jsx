@@ -22,132 +22,102 @@ import { useEditLectureMutation, useRemoveLectureMutation } from '@/features/api
 
 const MEDIA_API = "http://localhost:8081/api/v1/media";
 
-const CreateLecture = () => {
+const CreateLectureTab = () => {
   // Local state for lecture form fields
   const [lectureTitle, setLectureTitle] = useState("");
   const [uploadVideoInfo, setUploadVideoInfo] = useState(null);
-  const [description, setDescription] = useState("");
-  const [lectureType, setLectureType] = useState("video"); // "video" or "document"
-  const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  // const [description, setDescription] = useState("");
   const [isFree, setIsFree] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [btnDisable, setBtnDisable] = useState(true);
+  const [lectureType, setLectureType] = useState("video"); // "video" or "document"
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
 
-  // API Mutation hook from RTK Query for editing lecture
-  const [editLecture, { data, isLoading, error, isSuccess }] = useEditLectureMutation();
+  const params = useParams();
+  const { courseId, moduleId, lectureId } = params;
 
-  const [removeLecture, {data:removedata, isLoading:removeLoading, isSuccess:removeSuccess}] = useRemoveLectureMutation();
-
-  // Get courseId and lectureId from URL parameters
-  const { courseId, lectureId } = useParams();
   const navigate = useNavigate();
 
-  // Function to handle editing the lecture
-  const editLectureHandler = async (e) => {
-    e.preventDefault();
-    if (!lectureTitle || !uploadVideoInfo) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-    
+  // API mutations
+  const [editLecture, { data, isLoading, error, isSuccess }] = useEditLectureMutation();
+  const [removeLecture] = useRemoveLectureMutation();
 
-    await editLecture({
-      lectureTitle,
-      videoInfo: uploadVideoInfo,
-      description,
-      lectureType,
-      isPreviewFree: isFree,
-      courseId,
-      lectureId,
-    });
-  };
-
-  const removeLectureHandler = async () => {
-    await removeLecture(lectureId);
-  }
-
-  // Effect to handle API responses
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success(data?.message || "Lecture updated successfully!");
-      navigate(`/dashboard/instructor-course/${courseId}/lecture-module`);
-    }
-    if (error) {
-      toast.error(error?.data?.message || "Failed to update lecture.");
-    }
-  }, [isSuccess, error, data, navigate, courseId]);
-
-  useEffect(() => {
-    if(removeSuccess){
-      toast.success(removeLecture.message);
-    }
-  }, [removeSuccess])
-
-  // File upload handler
+  // handlers for API calls
   const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
-
-    const maxFileSize = lectureType === "video" ? 100 * 1024 * 1024 : 50 * 1024 * 1024;
-    if (selectedFile.size > maxFileSize) {
-      toast.error(`File size must be less than ${lectureType === "video" ? "100MB" : "50MB"}`);
+    const file = e.target.files[0];
+    if (!file) return;
+  
+    // Add file type validation
+    const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+    const validDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    
+    if (
+      (lectureType === "video" && !validVideoTypes.includes(file.type)) ||
+      (lectureType === "document" && !validDocTypes.includes(file.type))
+    ) {
+      toast.error("Invalid file format");
       return;
     }
-
+  
     const formData = new FormData();
-    formData.append("file", selectedFile);
-
+    formData.append("file", file);
     setMediaProgress(true);
+  
     try {
-      const res = await axios.post(`${MEDIA_API}/upload-video`, formData, {
+      const endpoint = lectureType === "video" ? "upload-video" : "upload-document";
+      const res = await axios.post(`${MEDIA_API}/${endpoint}`, formData, {
         onUploadProgress: ({ loaded, total }) => {
           setUploadProgress(Math.round((loaded * 100) / total));
-        },
+        }
       });
-
+  
       if (res.data.success) {
-        // Fixed typo: "videpUrl" is corrected to "videoUrl"
-        setUploadVideoInfo({ 
-          videoUrl: res.data.data.url, 
-          publicId: res.data.data.public_id 
+        setUploadVideoInfo({
+          mediaUrl: res.data.data.url,  // Keep consistent field name
+          publicId: res.data.data.public_id
         });
-        setBtnDisable(false);
-        toast.success("File uploaded successfully.");
+        setFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        toast.success("File uploaded successfully");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("File upload failed.");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error(`Failed to upload ${lectureType}`);
     } finally {
       setMediaProgress(false);
     }
-
-    setFile(selectedFile);
-    setPreviewUrl(URL.createObjectURL(selectedFile));
   };
-
   
+  const editLectureHandler = async () => {
 
-  // Function to reset the form for a new lecture
-  const resetForm = () => {
-    setLectureTitle("");
-    setDescription("");
-    setLectureType("video");
-    setFile(null);
-    setPreviewUrl("");
-    setUploadVideoInfo(null);
-    setIsFree(false);
-    setBtnDisable(true);
-    setUploadProgress(0);
-    toast.info("Form Reset");
-  };
+    await editLecture({
+      lectureId,
+      moduleId,
+      courseId,
+      lectureTitle,
+      mediaType: lectureType,
+      videoInfo: uploadVideoInfo,
+      isPreviewFree: isFree,
+    }).unwrap();
+  }
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success(data.message || "Lecture created successfully!");
+    }
+    if (error) {
+      toast.error("Error creating lecture");
+    }
+  }
+  , [data, error, isSuccess]);
 
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
       <div className="mb-8">
         <h1 className="font-bold text-2xl mb-2 dark:text-white">
-          {lectureId ? "Edit Lecture" : "Create New Lecture"}
+           Create New Lecture
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Build engaging learning content with multimedia support.
@@ -238,7 +208,7 @@ const CreateLecture = () => {
                       <p className="text-blue-600 dark:text-blue-400">Click to upload</p>
                       <p className="text-xs text-gray-500 mt-2">
                         {lectureType === "video"
-                          ? "Supported formats: MP4, MOV, AVI (Max 100MB)"
+                          ? "Supported formats: MP4, MOV, AVI (Max 1GB)"
                           : "Supported formats: PDF, DOCX (Max 50MB)"}
                       </p>
                     </div>
@@ -257,28 +227,23 @@ const CreateLecture = () => {
 
           {mediaProgress && (
             <div className="my-4">
-              <Progress value={uploadProgress} />
+              <Progress className="text-green-600" value={uploadProgress} />
               <p>{uploadProgress}% uploaded</p>
             </div>
           )}
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Lecture Description</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the lecture content"
-              className="min-h-[120px] bg-white dark:bg-gray-900"
-            />
-          </div>
+          {uploadVideoInfo && (
+            <div className="my-4">
+              <p className="text-green-600">Video uploaded successfully!</p>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col-reverse md:flex-row justify-between gap-2 mt-8">
           <Button
             variant="destructive"
-            onClick={removeLectureHandler}
+            // onClick={removeLectureHandler}
             className="gap-2"
           >
             <Trash2 className="h-5 w-5" />
@@ -308,4 +273,4 @@ const CreateLecture = () => {
   );
 };
 
-export default CreateLecture;
+export default CreateLectureTab;
