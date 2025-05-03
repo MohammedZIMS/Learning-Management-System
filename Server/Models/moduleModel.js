@@ -9,7 +9,7 @@ const moduleSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
-    required: true, // Ensure that the course is required
+    required: true,
   },
   lectures: [{
     type: mongoose.Schema.Types.ObjectId,
