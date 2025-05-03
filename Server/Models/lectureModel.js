@@ -9,11 +9,11 @@ const lectureSchema = new mongoose.Schema(
     mediaType: {
       type: String,
       enum: ["video", "document"], // Defines allowed types
-    //   required: true,
+      //required: true,
     },
     mediaUrl: {
       type: String,
-    //   required: true, // Ensures a file is always uploaded
+      //required: true, // Ensures a file is always uploaded
     },
     publicId: {
       type: String, // Cloudinary or other storage ID
@@ -25,7 +25,7 @@ const lectureSchema = new mongoose.Schema(
     module: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Module",
-      // required: [true, "Module reference is required"]
+      //required: [true, "Module reference is required"]
     },
     order: {
       type: Number,
