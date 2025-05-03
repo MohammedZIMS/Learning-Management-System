@@ -133,103 +133,215 @@ export const getCourseById = async (req, res) => {
   }
 }
 
-// create lecture Module
+
+// Create Lecture Module
 export const createLectureModule = async (req, res) => {
   try {
-    const { lectureTitle } = req.body;
+    const { title } = req.body;
     const { courseId } = req.params;
 
-    if (!lectureTitle || !courseId) {
+    if (!title || !courseId) {
       return res.status(400).json({
-        message: "Lecture title is required"
-      })
-    };
-
-    // create lecture
-    const lecture = await Lecture.create({ lectureTitle });
-
-    const course = await Course.findById(courseId);
-    if (course) {
-      course.lectures.push(lecture._id);
-      await course.save();
+        success: false,
+        message: "Module title and course ID are required"
+      });
     }
 
+    // Create new module
+    const newModule = await Module.create({
+      title,
+      course: courseId,
+      order: await Module.countDocuments({ course: courseId }) + 1
+    });
+
+    // Add module to course
+    await Course.findByIdAndUpdate(
+      courseId,
+      { $push: { modules: newModule._id } },
+      { new: true }
+    );
+
     return res.status(201).json({
-      lecture,
+      success: true,
+      module: newModule,
       message: "Lecture module created successfully!"
     });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
-      message: "Failed to create lecture module. Please try again."
-    })
+      success: false,
+      message: "Failed to create lecture module"
+    });
   }
 }
 
-// Get lecture Module
+
+// Get Lecture Modules by Course ID
 export const getCouseLectureModule = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate("lectures");
+    
+    const course = await Course.findById(courseId)
+      .populate({
+        path: "modules",
+        populate: {
+          path: "lectures",
+          model: "Lecture"
+        }
+      });
 
     if (!course) {
       return res.status(404).json({
+        success: false,
         message: "Course not found!"
-      })
+      });
     }
 
     return res.status(200).json({
-      lectures: course.lectures
-    })
+      success: true,
+      modules: course.modules
+    });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
-      message: "Failed to get lecture module. Please try again."
-    })
+      success: false,
+      message: "Failed to get lecture modules"
+    });
+  }
+}
+
+
+// Create Lecture within Module
+export const createLecture = async (req, res) => {
+  try {
+    const { lectureTitle, moduleId } = req.body;
+    const { courseId } = req.params;
+
+    if (!lectureTitle || !courseId || !moduleId) {
+      return res.status(400).json({
+        success: false,
+        message: "Lecture title, course ID, and module ID are required"
+      });
+    }
+
+    // Create lecture with module reference
+    const lecture = await Lecture.create({
+      lectureTitle,
+      module: moduleId
+    });
+
+    // Add lecture to module
+    await Module.findByIdAndUpdate(
+      moduleId,
+      { $push: { lectures: lecture._id } },
+      { new: true }
+    );
+
+    return res.status(201).json({
+      success: true,
+      lecture,
+      message: "Lecture created successfully!"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create lecture"
+    });
+  }
+}
+
+// Get Lectures by Module ID
+export const getLecturesByModuleId = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+
+    const module = await Module.findById(moduleId)
+      .populate('lectures');
+
+    if (!module) {
+      return res.status(404).json({
+        success: false,
+        message: "Module not found!"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      lectures: module.lectures
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get lectures"
+    });
   }
 }
 
 // Edit Lecture
 export const editLecture = async (req, res) => {
   try {
+
     const { lectureTitle, videoInfo, isPreviewFree } = req.body;
-    const { courseId, lectureId } = req.params;
-    const lecture = await Lecture.findById(lectureId);
+    const { courseId, moduleId, lectureId } = req.params;
+    const lecture = await Lecture.findById(lectureId).populate('module');
 
     if (!lecture) {
       return res.status(404).json({
-        message: "Lecture not fount!"
-      })
+        message: "Lecture not found!"
+      });
     }
 
-    // update Lecture
-    if (lectureTitle) { lecture.lectureTitle = lectureTitle; }
-    if (videoInfo.videoUrl) { lecture.videoUrl = videoInfo.videoUrl; }
-    if (videoInfo.publicId) { lecture.publicId = videoInfo.publicId; }
-    if (isPreviewFree) { lecture.isPreviewFree = isPreviewFree; }
+    // update lecture details
+    if (lectureTitle) {
+      lecture.lectureTitle = lectureTitle;
+    }
+    if (videoInfo) {
+      lecture.mediaUrl = videoInfo.mediaUrl;
+      lecture.publicId = videoInfo.publicId;
+    }
+    if (isPreviewFree !== undefined) {
+      lecture.isPreviewFree = isPreviewFree;
+    }
+    if (lecture.module._id.toString() !== moduleId || lecture.module.course.toString() !== courseId) {  
+      return res.status(400).json({
+        message: "Lecture does not belong to this module or course."
+      });
+    }
 
+    // Save the updated lecture
     await lecture.save();
 
-    // Ensure the course still has the lecture id if it was not aleardy added;
-    const course = await Course.findById(courseId);
-    if (course && !course.lectures.includes(lecture._id)) {
-      course.lectures.push(lecture._id);
-      await course.save();
-    };
-    return res.status(200).json({
+    //Ensure the lecture is added to the module
+    const module = await Module.findById(moduleId);
+    if (!module) {
+      return res.status(404).json({
+        message: "Module not found!"
+      });
+    }
+    if (!module.lectures.includes(lecture._id)) {
+      module.lectures.push(lecture._id);
+      await module.save();
+    }
+
+    res.status(200).json({
+      success: true,
       lecture,
-      message: "Lecture updated successfully."
-    })
+      message: "Lecture updated successfully!",
+    });
 
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
-      message: "Failed to edit lectures. Please try again."
-    })
+      message: "Failed to edit lecture. Please try again."
+    });
   }
-}
+};
 
 // Remove Lecture
 export const removeLecture = async (req, res) => {
@@ -249,10 +361,10 @@ export const removeLecture = async (req, res) => {
     }
 
     // Remove the lecture reference from the associated course
-    await Course.updateOne(
-      { lectures: lectureId }, // find the course that contains the lecture
-      { $pull: { lectures: lectureId } } // Remove the lectures id from the lectures array
-    )
+    await Module.updateMany(
+      { lectures: lectureId },
+      { $pull: { lectures: lectureId } }
+    );
 
     return res.status(200).json({
       message: "Lecture removed successfully."
@@ -265,3 +377,29 @@ export const removeLecture = async (req, res) => {
     })
   }
 }
+
+// Get Lecture By ID
+export const getLectureById = async (req, res) => {
+  try {
+    const { lectureId } = req.params;
+    const lecture = await Lecture.findById(lectureId);
+    
+    if (!lecture) {
+      return res.status(404).json({
+        success: false,
+        message: "Lecture not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      lecture
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch lecture"
+    });
+  }
+};
