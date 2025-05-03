@@ -11,9 +11,12 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
+  dest: 'uploads/', // Directory to save files if using diskStorage
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: {
+    fileSize: 1000 * 1024 * 1024, // 1 GB limit
+  },
 });
 
 export default upload;
