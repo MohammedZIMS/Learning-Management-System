@@ -5,7 +5,8 @@ import {
     createCourse,  
     createLecture,  createLectureModule, 
     editCourse,  getCourseById, 
-    getCouseLectureModule, getCreatorCourses, getLecturesByModuleId, getLectureById, removeLecture } from "../Controller/courseController.js";
+    getCouseLectureModule, getCreatorCourses, getLecturesByModuleId, getLectureById, removeLecture,
+    editLecture} from "../Controller/courseController.js";
 
 const router = express.Router();
 
@@ -16,16 +17,17 @@ router.put("/:courseId", isAuthenticated, upload.single("courseThumbnail"), edit
 router.get("/:courseId", isAuthenticated, getCourseById);
 
 // Module Routes
-router.post("/:courseId/lecture-module", isAuthenticated, createLectureModule);
-router.get("/:courseId/lecture-module", isAuthenticated, getCouseLectureModule);
+router.post("/:courseId/modules", isAuthenticated, createLectureModule);
+router.get("/:courseId/modules", isAuthenticated, getCouseLectureModule);
 
 // Lecture Routes
-router.post("/:courseId/lecture-module/:moduleId/lectures", isAuthenticated, createLecture);
-router.get("/:courseId/lecture-module/:moduleId/lectures", isAuthenticated, getLecturesByModuleId);
+router.post("/:courseId/modules/:moduleId/lectures", isAuthenticated, createLecture);
+router.get("/:courseId/modules/:moduleId/lectures", isAuthenticated, getLecturesByModuleId);
 
-router.post("/:courseId/lecture-module/:moduleId/lectures/:lectureId", isAuthenticated, editCourse);
-router.delete("lecture-module/:moduleId/lectures/:lectureId", isAuthenticated, removeLecture);
-router.get("lecture-module/:moduleId/lectures/:lectureId", isAuthenticated, getLectureById);
+// Lecture Edit and Delete Routes
+router.post("/:courseId/modules/:moduleId/lectures/:lectureId", isAuthenticated, editLecture);
+router.delete("modules/:moduleId/lectures/:lectureId", isAuthenticated, removeLecture);
+router.get("modules/:moduleId/lectures/:lectureId", isAuthenticated, getLectureById);
 
 
 export default router;
