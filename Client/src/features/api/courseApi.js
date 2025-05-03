@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+// Base API URL for all course-related operations
 const COURSE_API = "http://localhost:8081/api/v1/course";
 
+// Define the RTK Query API slice
 export const courseApi = createApi({
   reducerPath: "courseApi",
   tagTypes: ["Refetch_Creator_Course"],
@@ -10,6 +12,8 @@ export const courseApi = createApi({
     credentials: "include", // Ensures cookies are sent with requests
   }),
   endpoints: (builder) => ({
+
+    // Mutation to create a new course
     createCourse: builder.mutation({
       query: (formData) => ({
         url: "",
@@ -19,6 +23,7 @@ export const courseApi = createApi({
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
 
+    // Query to fetch all courses created by the logged-in user
     getCreatorCourses: builder.query({
       query: () => ({
         url: "",
@@ -27,6 +32,7 @@ export const courseApi = createApi({
       providesTags: ["Refetch_Creator_Course"],
     }),
 
+    // Query to fetch a specific course by its ID
     getCourseById: builder.query({  
       query: (courseId) => ({
         url: `/${courseId}`,
@@ -35,6 +41,7 @@ export const courseApi = createApi({
       providesTags: ["Refetch_Creator_Course"],
     }),
 
+    // Mutation to edit an existing course
     editCourse: builder.mutation({
       query: ({ formData, courseId }) => ({
         url: `/${courseId}`,
@@ -44,9 +51,10 @@ export const courseApi = createApi({
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
 
+    // Mutation to create a new lecture module within a course
     createLectureModule: builder.mutation({
       query: ({title, courseId}) => ({
-        url: `/${courseId}/lecture-module`,
+        url: `/${courseId}/modules`,
         method: "POST",
         body: {title}
       }),
@@ -84,6 +92,25 @@ export const courseApi = createApi({
       providesTags: ["Lecture"],
     }),
 
+
+    // Mutation to edit an existing lecture
+    editLecture: builder.mutation({
+      query: ({ lectureTitle, videoInfo, isPreviewFree, courseId, moduleId, lectureId }) => ({
+        url: `/${courseId}/modules/${moduleId}/lectures/${lectureId}`,
+        method: "POST",
+        body: { lectureTitle, videoInfo, isPreviewFree },
+      }),
+      invalidatesTags: ["Refetch_Creator_Course"],
+    }),
+
+    removeLecture: builder.mutation({
+      query: ({ lectureId }) => ({
+        url: `/modules/${lectureId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Refetch_Creator_Course"],
+    }),
+
   }),
 });
 
@@ -97,4 +124,6 @@ export const {
   useGetCouseLectureModuleQuery,
   useCreateLectureMutation,
   useGetLecturesByModuleQuery,
+  useEditLectureMutation,
+  useRemoveLectureMutation,
 } = courseApi;
