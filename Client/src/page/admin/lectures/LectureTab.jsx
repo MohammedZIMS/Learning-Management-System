@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2, Video, FileText, Trash2, Plus } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
@@ -25,46 +24,40 @@ const MEDIA_API = "http://localhost:8081/api/v1/media";
 const CreateLectureTab = () => {
   // Local state for lecture form fields
   const [lectureTitle, setLectureTitle] = useState("");
-  const [uploadVideoInfo, setUploadVideoInfo] = useState(null);
-  // const [description, setDescription] = useState("");
+  const [uploadMediaInfo, setUploadMediaInfo] = useState(null);
   const [isFree, setIsFree] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [btnDisable, setBtnDisable] = useState(true);
-  const [lectureType, setLectureType] = useState("video"); // "video" or "document"
+  const [lectureType, setLectureType] = useState("video");
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
 
-  const params = useParams();
-  const { courseId, moduleId, lectureId } = params;
-
+  const { courseId, moduleId, lectureId } = useParams();
   const navigate = useNavigate();
 
   // API mutations
-  const [editLecture, { data, isLoading, error, isSuccess }] = useEditLectureMutation();
-  const [removeLecture] = useRemoveLectureMutation();
+  const [editLecture, { isLoading, error, isSuccess }] = useEditLectureMutation();
+  const [removeLecture, {data:removeData, isLoading:removeLoading, isSuccess:removeSuccess}] = useRemoveLectureMutation();
 
-  // handlers for API calls
+  // File upload handler
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
-    // Add file type validation
+
+    // File validation
     const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
     const validDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     
-    if (
-      (lectureType === "video" && !validVideoTypes.includes(file.type)) ||
-      (lectureType === "document" && !validDocTypes.includes(file.type))
-    ) {
+    if ((lectureType === "video" && !validVideoTypes.includes(file.type)) ||
+        (lectureType === "document" && !validDocTypes.includes(file.type))) {
       toast.error("Invalid file format");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
     setMediaProgress(true);
-  
+
     try {
       const endpoint = lectureType === "video" ? "upload-video" : "upload-document";
       const res = await axios.post(`${MEDIA_API}/${endpoint}`, formData, {
@@ -72,66 +65,112 @@ const CreateLectureTab = () => {
           setUploadProgress(Math.round((loaded * 100) / total));
         }
       });
-  
+
       if (res.data.success) {
-        setUploadVideoInfo({
-          mediaUrl: res.data.data.url,  // Keep consistent field name
+        setUploadMediaInfo({
+          mediaUrl: res.data.data.url,
           publicId: res.data.data.public_id
         });
         setFile(file);
-        setPreviewUrl(URL.createObjectURL(file));
+        
+        // Handle preview based on file type
+        if (lectureType === "document" && file.type === "application/pdf") {
+          const reader = new FileReader();
+          reader.onload = (e) => setPreviewUrl(e.target.result);
+          reader.readAsDataURL(file);
+        } else {
+          setPreviewUrl(URL.createObjectURL(file));
+        }
+        
         toast.success("File uploaded successfully");
       }
     } catch (error) {
-      console.error("Upload error:", error);
       toast.error(`Failed to upload ${lectureType}`);
+      console.error("Upload error:", error);
     } finally {
       setMediaProgress(false);
     }
   };
-  
-  const editLectureHandler = async () => {
 
-    await editLecture({
-      lectureId,
-      moduleId,
-      courseId,
-      lectureTitle,
-      mediaType: lectureType,
-      videoInfo: uploadVideoInfo,
-      isPreviewFree: isFree,
-    }).unwrap();
-  }
+  // Handle lecture submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!lectureTitle || !uploadMediaInfo) {
+      toast.error("Please fill all required fields");
+      return;
+    }
 
+    try {
+      const mediaField = lectureType === "video" ? "videoInfo" : "documentInfo";
+      await editLecture({
+        lectureId,
+        moduleId,
+        courseId,
+        lectureTitle,
+        mediaType: lectureType,
+        [mediaField]: uploadMediaInfo,
+        isPreviewFree: isFree,
+      }).unwrap();
+
+      toast.success(lectureId ? "Lecture updated!" : "Lecture created!");
+      navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}`);
+    } catch (error) {
+      toast.error(error.data?.message || "Operation failed");
+    }
+  };
+
+  // Handle lecture deletion
+  const handleDelete = async () => {
+    await removeLecture(lectureId).unwrap();
+  };
+
+  // Cleanup preview URL
   useEffect(() => {
-    if (isSuccess) {
-      toast.success(data.message || "Lecture created successfully!");
-    }
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  // Handle error and success states
+  useEffect(() => {
     if (error) {
-      toast.error("Error creating lecture");
+      toast.error(error.data?.message || "Operation failed");
+    }
+    if (isSuccess) {
+      toast.success("Lecture updated successfully!");
+      // navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}`);
+    }
+  }, [error, isSuccess]);
+
+  // Handle remove success
+  useEffect(() => {
+    if (removeSuccess) {
+      toast.success(removeData.message || "Lecture deleted successfully!");
+      navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}/lecture`);
     }
   }
-  , [data, error, isSuccess]);
+  , [removeSuccess, removeData, navigate, courseId, moduleId]);
+
+
+
 
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
       <div className="mb-8">
         <h1 className="font-bold text-2xl mb-2 dark:text-white">
-           Create New Lecture
+          {lectureId ? "Edit Lecture" : "Create New Lecture"}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Build engaging learning content with multimedia support.
         </p>
       </div>
 
-      {/* Removed form onSubmit and using button onClick for submission */}
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Lecture Title Section */}
         <div className="space-y-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div className="space-y-2">
-            <Label>
-              Lecture Title <span className="text-red-500">*</span>
-            </Label>
+            <Label>Lecture Title <span className="text-red-500">*</span></Label>
             <Input
               value={lectureTitle}
               onChange={(e) => setLectureTitle(e.target.value)}
@@ -145,11 +184,9 @@ const CreateLectureTab = () => {
         {/* Content Section */}
         <div className="space-y-6 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Lecture Type */}
+            {/* Lecture Type Selector */}
             <div className="space-y-2">
-              <Label>
-                Content Type <span className="text-red-500">*</span>
-              </Label>
+              <Label>Content Type <span className="text-red-500">*</span></Label>
               <Select value={lectureType} onValueChange={setLectureType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select content type" />
@@ -164,7 +201,7 @@ const CreateLectureTab = () => {
               </Select>
             </div>
 
-            {/* Free Content Toggle */}
+            {/* Free Preview Toggle */}
             <div className="space-y-2">
               <Label>Access Type</Label>
               <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-md">
@@ -180,10 +217,11 @@ const CreateLectureTab = () => {
             </div>
           </div>
 
-          {/* File Upload */}
+          {/* File Upload Section */}
           <div className="space-y-2">
             <Label>
-              {lectureType === "video" ? "Upload Video" : "Upload Document"} <span className="text-red-500">*</span>
+              {lectureType === "video" ? "Upload Video" : "Upload Document"} 
+              <span className="text-red-500">*</span>
             </Label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
               <label className="flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -192,7 +230,11 @@ const CreateLectureTab = () => {
                     {lectureType === "video" ? (
                       <video src={previewUrl} controls className="w-full max-h-64 rounded-lg mb-4" />
                     ) : (
-                      <FileText className="h-16 w-16 text-blue-500 mb-4 mx-auto" />
+                      <iframe 
+                        src={previewUrl} 
+                        className="w-full h-64 rounded-lg mb-4"
+                        title="Document preview"
+                      />
                     )}
                     <p className="text-sm font-medium text-green-600">{file?.name}</p>
                     <p className="text-sm text-gray-500 mt-2">Click to replace file</p>
@@ -207,7 +249,7 @@ const CreateLectureTab = () => {
                     <div>
                       <p className="text-blue-600 dark:text-blue-400">Click to upload</p>
                       <p className="text-xs text-gray-500 mt-2">
-                        {lectureType === "video"
+                        {lectureType === "video" 
                           ? "Supported formats: MP4, MOV, AVI (Max 1GB)"
                           : "Supported formats: PDF, DOCX (Max 50MB)"}
                       </p>
@@ -225,45 +267,59 @@ const CreateLectureTab = () => {
             </div>
           </div>
 
+          {/* Upload Progress */}
           {mediaProgress && (
             <div className="my-4">
-              <Progress className="text-green-600" value={uploadProgress} />
-              <p>{uploadProgress}% uploaded</p>
+              <Progress value={uploadProgress} />
+              <p className="text-sm text-gray-500 mt-1">
+                {uploadProgress}% uploaded
+              </p>
             </div>
           )}
 
-          {uploadVideoInfo && (
+          {/* Upload Success Message */}
+          {uploadMediaInfo && (
             <div className="my-4">
-              <p className="text-green-600">Video uploaded successfully!</p>
+              <p className="text-green-600">
+                {lectureType === "video" ? "Video" : "Document"} uploaded successfully!
+              </p>
             </div>
           )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col-reverse md:flex-row justify-between gap-2 mt-8">
+          {lectureId && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              className="gap-2"
+            >
+              {removeLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <Trash2 className="h-5 w-5" />
+                </>
+              )}
+              {removeLoading ? "Deleting..." : "Delete Lecture"}
+            </Button>
+          )}
           <Button
-            variant="destructive"
-            // onClick={removeLectureHandler}
-            className="gap-2"
-          >
-            <Trash2 className="h-5 w-5" />
-            Remove
-          </Button>
-          <Button
-            type="button"
+            type="submit"
             disabled={isLoading}
             className="gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto"
-            onClick={editLectureHandler}
           >
             {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Creating...
+                {lectureId ? "Saving..." : "Creating..."}
               </>
             ) : (
               <>
                 <Plus className="h-5 w-5" />
-                Create Lecture
+                {lectureId ? "Save Changes" : "Create Lecture"}
               </>
             )}
           </Button>
