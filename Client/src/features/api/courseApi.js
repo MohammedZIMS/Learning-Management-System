@@ -6,7 +6,8 @@ const COURSE_API = "http://localhost:8081/api/v1/course";
 // Define the RTK Query API slice
 export const courseApi = createApi({
   reducerPath: "courseApi",
-  tagTypes: ["Refetch_Creator_Course"],
+  tagTypes: ["Refetch_Creator_Course", "Refetch_Lecture", "Lecture"],
+  // Base query function to handle requests
   baseQuery: fetchBaseQuery({
     baseUrl: COURSE_API,
     credentials: "include", // Ensures cookies are sent with requests
@@ -76,8 +77,8 @@ export const courseApi = createApi({
         method: "POST",
         body: { 
           lectureTitle,
-          courseId,       // Add these to body
-          moduleId       // if backend expects them
+          courseId,       
+          moduleId       
         }
       }),
       invalidatesTags: ["Lecture"],
@@ -89,14 +90,14 @@ export const courseApi = createApi({
         url: `/${courseId}/modules/${moduleId}/lectures`,
         method: "GET",
       }),
-      providesTags: ["Lecture"],
+      providesTags: ["Lecture", "Refetch_Lecture", "Refetch_Creator_Course"],
     }),
 
 
     // Mutation to edit an existing lecture
     editLecture: builder.mutation({
       query: ({ lectureTitle, videoInfo, isPreviewFree, courseId, moduleId, lectureId }) => ({
-        url: `/${courseId}/modules/${moduleId}/lectures/${lectureId}`,
+        url: `/${courseId}/modules/${moduleId}/lecture/${lectureId}`,
         method: "POST",
         body: { lectureTitle, videoInfo, isPreviewFree },
       }),
@@ -104,11 +105,18 @@ export const courseApi = createApi({
     }),
 
     removeLecture: builder.mutation({
-      query: ({ lectureId }) => ({
-        url: `/modules/${lectureId}`,
+      query: (lectureId) => ({
+        url: `/lecture/${lectureId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Refetch_Creator_Course"],
+      invalidatesTags: ["Refetch_Creator_Course", "Refetch_Lecture"],
+    }),
+
+    getLectureById: builder.query({
+      query: ({ lectureId }) => ({
+        url: `/lecture/${lectureId}`,
+        method: "GET",
+      }),
     }),
 
   }),
@@ -126,4 +134,5 @@ export const {
   useGetLecturesByModuleQuery,
   useEditLectureMutation,
   useRemoveLectureMutation,
+  useGetLectureByIdQuery,
 } = courseApi;
