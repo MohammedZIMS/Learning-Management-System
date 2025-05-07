@@ -384,6 +384,7 @@ export const getLectureById = async (req, res) => {
     const { lectureId } = req.params;
     const lecture = await Lecture.findById(lectureId);
     
+    
     if (!lecture) {
       return res.status(404).json({
         success: false,
@@ -396,7 +397,7 @@ export const getLectureById = async (req, res) => {
       lecture
     });
   } catch (error) {
-    console.error(error);
+    console.log("Error fetching lecture by ID:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch lecture"
