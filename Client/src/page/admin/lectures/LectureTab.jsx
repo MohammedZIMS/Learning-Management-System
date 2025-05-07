@@ -12,12 +12,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, Video, FileText, Trash2, Plus } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { data, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import axios from 'axios';
 import { Progress } from '@/components/ui/progress';
-import { useEditLectureMutation, useRemoveLectureMutation } from '@/features/api/courseApi';
+import { useEditLectureMutation, useRemoveLectureMutation, useGetLectureByIdQuery } from '@/features/api/courseApi';
 
 const MEDIA_API = "http://localhost:8081/api/v1/media";
 
@@ -34,10 +34,26 @@ const CreateLectureTab = () => {
 
   const { courseId, moduleId, lectureId } = useParams();
   const navigate = useNavigate();
+  
 
   // API mutations
+  const { data:lectureData, isLoading: lectureLoading, error: lectureError } = useGetLectureByIdQuery({lectureId}, { skip: !lectureId });
   const [editLecture, { isLoading, error, isSuccess }] = useEditLectureMutation();
-  const [removeLecture, {data:removeData, isLoading:removeLoading, isSuccess:removeSuccess}] = useRemoveLectureMutation();
+  const [removeLecture, { data: removeData, isLoading: removeLoading, isSuccess: removeSuccess }] = useRemoveLectureMutation();
+
+  // Set initial state if editing an existing lecture
+  const lecture = lectureData?.lecture;  
+
+  // Set initial values for lecture title and free preview based on existing lecture data
+  useEffect(() => {
+    if (lecture) {
+      setLectureTitle(lecture.lectureTitle);
+      setIsFree(lecture.isPreviewFree);
+      setUploadMediaInfo(lecture.mediaInfo);
+    }
+  }, [lecture]);
+
+  
 
   // File upload handler
   const handleFileChange = async (e) => {
@@ -47,9 +63,9 @@ const CreateLectureTab = () => {
     // File validation
     const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
     const validDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    
+
     if ((lectureType === "video" && !validVideoTypes.includes(file.type)) ||
-        (lectureType === "document" && !validDocTypes.includes(file.type))) {
+      (lectureType === "document" && !validDocTypes.includes(file.type))) {
       toast.error("Invalid file format");
       return;
     }
@@ -72,7 +88,7 @@ const CreateLectureTab = () => {
           publicId: res.data.data.public_id
         });
         setFile(file);
-        
+
         // Handle preview based on file type
         if (lectureType === "document" && file.type === "application/pdf") {
           const reader = new FileReader();
@@ -81,7 +97,7 @@ const CreateLectureTab = () => {
         } else {
           setPreviewUrl(URL.createObjectURL(file));
         }
-        
+
         toast.success("File uploaded successfully");
       }
     } catch (error) {
@@ -95,7 +111,7 @@ const CreateLectureTab = () => {
   // Handle lecture submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!lectureTitle || !uploadMediaInfo) {
       toast.error("Please fill all required fields");
       return;
@@ -114,7 +130,7 @@ const CreateLectureTab = () => {
       }).unwrap();
 
       toast.success(lectureId ? "Lecture updated!" : "Lecture created!");
-      navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}`);
+      navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}/lecture`);
     } catch (error) {
       toast.error(error.data?.message || "Operation failed");
     }
@@ -139,7 +155,7 @@ const CreateLectureTab = () => {
     }
     if (isSuccess) {
       toast.success("Lecture updated successfully!");
-      // navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}`);
+
     }
   }, [error, isSuccess]);
 
@@ -150,11 +166,9 @@ const CreateLectureTab = () => {
       navigate(`/dashboard/instructor-course/${courseId}/modules/${moduleId}/lecture`);
     }
   }
-  , [removeSuccess, removeData, navigate, courseId, moduleId]);
+    , [removeSuccess, removeData, navigate, courseId, moduleId]);
 
-
-
-
+  
   return (
     <div className="flex-1 mx-auto max-w-4xl p-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm">
       <div className="mb-8">
@@ -220,7 +234,7 @@ const CreateLectureTab = () => {
           {/* File Upload Section */}
           <div className="space-y-2">
             <Label>
-              {lectureType === "video" ? "Upload Video" : "Upload Document"} 
+              {lectureType === "video" ? "Upload Video" : "Upload Document"}
               <span className="text-red-500">*</span>
             </Label>
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
@@ -230,8 +244,8 @@ const CreateLectureTab = () => {
                     {lectureType === "video" ? (
                       <video src={previewUrl} controls className="w-full max-h-64 rounded-lg mb-4" />
                     ) : (
-                      <iframe 
-                        src={previewUrl} 
+                      <iframe
+                        src={previewUrl}
                         className="w-full h-64 rounded-lg mb-4"
                         title="Document preview"
                       />
@@ -249,7 +263,7 @@ const CreateLectureTab = () => {
                     <div>
                       <p className="text-blue-600 dark:text-blue-400">Click to upload</p>
                       <p className="text-xs text-gray-500 mt-2">
-                        {lectureType === "video" 
+                        {lectureType === "video"
                           ? "Supported formats: MP4, MOV, AVI (Max 1GB)"
                           : "Supported formats: PDF, DOCX (Max 50MB)"}
                       </p>
