@@ -25,9 +25,9 @@ router.post("/:courseId/modules/:moduleId/lectures", isAuthenticated, createLect
 router.get("/:courseId/modules/:moduleId/lectures", isAuthenticated, getLecturesByModuleId);
 
 // Lecture Edit and Delete Routes
-router.post("/:courseId/modules/:moduleId/lectures/:lectureId", isAuthenticated, editLecture);
-router.delete("modules/:moduleId/lectures/:lectureId", isAuthenticated, removeLecture);
-router.get("modules/:moduleId/lectures/:lectureId", isAuthenticated, getLectureById);
+router.post("/:courseId/modules/:moduleId/lecture/:lectureId", isAuthenticated, editLecture);
+router.delete("/lecture/:lectureId", isAuthenticated, removeLecture);
+router.get("/lecture/:lectureId", isAuthenticated, getLectureById);
 
 
 export default router;
