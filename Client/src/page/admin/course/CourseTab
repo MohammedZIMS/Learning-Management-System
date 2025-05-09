@@ -20,8 +20,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Loader2, UploadCloud } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useEditCourseMutation, useGetCourseByIdQuery } from "@/features/api/courseApi";
+import React, { act, useEffect, useState } from "react";
+import { useEditCourseMutation, useGetCourseByIdQuery, usePublishCourseMutation} from "@/features/api/courseApi";
 import { toast } from 'sonner';
 
 const CourseTab = () => {
@@ -40,6 +40,8 @@ const CourseTab = () => {
 
     const params = useParams();
     const courseId = params.courseId;
+
+    const [publishCourse,{}] = usePublishCourseMutation();
 
     // Fetch course details by ID
     const { data: courseByIdData, isLoading: courseByIdLoading, refetch } = useGetCourseByIdQuery(courseId);
@@ -60,6 +62,18 @@ const CourseTab = () => {
     }, [courseByIdData]);
 
     const [editCourse, { data, isLoading: courseLoading, isSuccess, error }] = useEditCourseMutation();
+
+    // Function to handle publish status toggle
+    const publishStatusHandler = async (action) => {
+        try {
+            const response = await publishCourse({ courseId, isPublished: action });;
+            if (response.data) {
+            toast.success(response.data.message || "Course publish status updated successfully.");
+            }
+        } catch (error) {
+            toast.error(response.error.data.message || "Failed to update publish status.");
+        }
+    };
 
 
     // State for thumbnail preview URL
@@ -146,10 +160,12 @@ const CourseTab = () => {
                         </CardDescription>
                     </div>
                     <div className="mt-4 md:mt-0 space-x-2">
-                        <Button variant="outline">
-                            {true ? "Unpublished" : "Published"}
+                        <Button disabled={courseByIdData?.course?.modules.length === 0} variant="outline" onClick={() => publishStatusHandler(courseByIdData?.course.isPublished ? "false" : "true")}>
+                            {courseByIdData?.course?.isPublished ? "Unpublish" : "Publish"}
                         </Button>
-                        <Button>Remove Course</Button>
+                        <Button className="bg-red-600 hover:bg-red-700 text-white">
+                            Remove Course
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-6">
