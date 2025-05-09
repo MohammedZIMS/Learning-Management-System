@@ -3,10 +3,13 @@ import Course from './Course';
 import { BookOpen, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 const MyLearning = () => {
     const isLoading = false;
-    const myLearningCourse = [1,2];
+    const myLearningCourse = [];
+
+    const navigator = useNavigate();
   return (
     <div className='max-w-6xl mx-auto my-24 px-4 md:px-6'>
         <div className="border-b dark:border-gray-800 pb-4 mb-8">
@@ -28,16 +31,16 @@ const MyLearning = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
                         You haven't enrolled in any courses yet. Explore our catalog to start your learning journey!
                     </p>
-                    <Button className="gap-2">
+                    <Button className="gap-2" onClick={() => navigator('/course')}>
                         <PlusCircle className="w-5 h-5" />
                         Browse Courses
                     </Button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Course />
-                    <Course />
-                    <Course />
+                    {myLearningCourse.map((course, index) => (
+                        <Course key={index} course={course} />
+                    ))}
                 </div>
             )}
         </div>
