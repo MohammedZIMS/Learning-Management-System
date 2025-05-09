@@ -12,7 +12,9 @@ import CourseTable from './page/admin/course/CourseTable';
 import AddCourse from './page/admin/course/AddCourse';
 import EditCourse from './page/admin/course/EditCourse';
 import CreateLectureModule from './page/admin/lectures/CreateLectureModule';
+import CreateLecture from './page/admin/lectures/CreateLecture';
 import EditLecture from './page/admin/lectures/EditLecture';
+import CourseDetail from './page/student/CourseDetail';
 
 const appRouter = createBrowserRouter([
   {
@@ -45,6 +47,10 @@ const appRouter = createBrowserRouter([
         element: <Courses/>,
       },
       {
+        path: 'course-detail/:courseId',
+        element: <CourseDetail/>,
+      },
+      {
         path: 'dashboard',
         element: <Sidebar />,
         children: [
@@ -65,17 +71,18 @@ const appRouter = createBrowserRouter([
             element: <EditCourse/>,
           },
           {
-            path: 'instructor-course/:courseId/lecture-module',
+            path: 'instructor-course/:courseId/modules',
             element: <CreateLectureModule/>,
           },
           {
-            path: 'instructor-course/:courseId/lecture-module/:moduleId/lecture',
+            path: 'instructor-course/:courseId/modules/:moduleId/lecture',
             element: <CreateLecture/>,
           },
           {
-            path: 'courses/:courseId/modules/:moduleId/lectures/:lectureId',
+            path: 'courses/:courseId/modules/:moduleId/lecture/:lectureId',
             element: <EditLecture />,
           },
+          
           
         ]
       },
