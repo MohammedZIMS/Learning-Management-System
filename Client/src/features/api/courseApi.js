@@ -24,6 +24,15 @@ export const courseApi = createApi({
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
 
+    // Query to fetch all published courses
+    getPublishedCourses: builder.query({
+      query: () => ({
+        url: "/published-courses",
+        method: "GET",
+      }),
+      providesTags: ["Refetch_Creator_Course"],
+    }),
+
     // Query to fetch all courses created by the logged-in user
     getCreatorCourses: builder.query({
       query: () => ({
@@ -119,12 +128,21 @@ export const courseApi = createApi({
       }),
     }),
 
+    publishCourse: builder.mutation({
+      query: ({ courseId, isPublished }) => ({
+        url: `/${courseId}?isPublished=${isPublished}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Refetch_Creator_Course"],
+    }),
+
   }),
 });
 
 // Export hooks correctly
 export const { 
   useCreateCourseMutation, 
+  useGetPublishedCoursesQuery,
   useGetCreatorCoursesQuery, 
   useGetCourseByIdQuery, 
   useEditCourseMutation,
@@ -135,4 +153,5 @@ export const {
   useEditLectureMutation,
   useRemoveLectureMutation,
   useGetLectureByIdQuery,
+  usePublishCourseMutation,
 } = courseApi;
