@@ -2,17 +2,20 @@ import express from "express";
 import isAuthenticated from "../Middlewares/isAuthenticated.js";
 import upload from "../Utils/multer.js";
 import { 
-    createCourse,  
-    createLecture,  createLectureModule, 
+    createCourse,  createLecture,  createLectureModule, 
     editCourse,  getCourseById, 
-    getCouseLectureModule, getCreatorCourses, getLecturesByModuleId, getLectureById, removeLecture,
-    editLecture} from "../Controller/courseController.js";
+    getCouseLectureModule, getCreatorCourses, 
+    getLecturesByModuleId, getLectureById, 
+    removeLecture, editLecture,
+    togglePublishCourse,
+    getPublishedCourses} from "../Controller/courseController.js";
 
 const router = express.Router();
 
 // Course Routes
 router.post("/", isAuthenticated, upload.single("courseThumbnail"), createCourse); // Correct field name
-router.get("/", isAuthenticated, getCreatorCourses);
+router.get("/published-courses", isAuthenticated, getPublishedCourses); // Corrected route for published courses
+router.get("/", isAuthenticated, getCreatorCourses); // Corrected route for creator courses
 router.put("/:courseId", isAuthenticated, upload.single("courseThumbnail"), editCourse); // Correct method (PUT)
 router.get("/:courseId", isAuthenticated, getCourseById);
 
@@ -28,6 +31,9 @@ router.get("/:courseId/modules/:moduleId/lectures", isAuthenticated, getLectures
 router.post("/:courseId/modules/:moduleId/lecture/:lectureId", isAuthenticated, editLecture);
 router.delete("/lecture/:lectureId", isAuthenticated, removeLecture);
 router.get("/lecture/:lectureId", isAuthenticated, getLectureById);
+
+// Toggle publish status of a course
+router.patch("/:courseId", isAuthenticated, togglePublishCourse); 
 
 
 export default router;
