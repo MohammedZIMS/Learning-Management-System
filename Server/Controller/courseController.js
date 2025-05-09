@@ -45,6 +45,25 @@ export const createCourse = async (req, res) => {
   }
 };
 
+// Get all published courses
+export const getPublishedCourses = async (req, res) => {
+  try {
+    const courses = await Course.find({ isPublished: true }).populate("creator", "name photoUrl");
+    if (!courses) {
+      return res.status(404).json({
+        courses: [],
+        message: "Courses not found."
+      });
+    }
+    return res.status(200).json({ courses });
+  } catch (error) {
+    console.log("Error fetching courses:", error);
+    return res.status(500).json({
+      message: "Failed to get courses. Please try again."
+    });
+  }
+};
+
 // Get courses created by the authenticated user
 export const getCreatorCourses = async (req, res) => {
   try {
@@ -90,7 +109,6 @@ export const editCourse = async (req, res) => {
       // upload a thumbnail on clourdinary
       courseThumbnail = await uploadMedia(thumbnail.path);
     }
-
 
     const updateData = { courseTitle, subTitle, description, category, courseLevel, coursePrice, courseThumbnail: courseThumbnail?.secure_url };
 
@@ -301,12 +319,14 @@ export const editLecture = async (req, res) => {
     if (lectureTitle) {
       lecture.lectureTitle = lectureTitle;
     }
-    if (videoInfo) {
+    if (videoInfo?.mediaUrl) {
       lecture.mediaUrl = videoInfo.mediaUrl;
       lecture.publicId = videoInfo.publicId;
+      lecture.mediaType = videoInfo.mediaType;
     }
     if (isPreviewFree !== undefined) {
       lecture.isPreviewFree = isPreviewFree;
+
     }
     if (lecture.module._id.toString() !== moduleId || lecture.module.course.toString() !== courseId) {  
       return res.status(400).json({
@@ -346,6 +366,8 @@ export const editLecture = async (req, res) => {
 // Remove Lecture
 export const removeLecture = async (req, res) => {
   try {
+    console.log(req.body);
+    
     const { lectureId } = req.params;
     const lecture = await Lecture.findByIdAndDelete(lectureId);
 
@@ -404,3 +426,35 @@ export const getLectureById = async (req, res) => {
     });
   }
 };
+
+// Toggle Publish Course
+export const togglePublishCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const publish = req.query.isPublished === "true"; // This is optional, you can use it to set the initial state
+  
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found!"
+      })
+    }
+
+    // Toggle the publish status
+    course.isPublished = publish;
+    await course.save();
+
+    
+    const statusMessage = course.isPublished ? "Published" : "Unpublished";
+    return res.status(200).json({
+      message: `Course is ${statusMessage} successfully!`,
+    });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Failed to toggle publish status. Please try again."
+    })
+  }
+}
