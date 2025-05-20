@@ -1,12 +1,20 @@
 import express from 'express';
-import { createCheckoutSession, stripeWebhook } from '../Controller/coursePurchaseController.js';
-import isAuthenticated from "../Middlewares/isAuthenticated.js";
+import { createCheckoutSession, getAllPurchasedCourses, getCourseDetailsWithPurchaseStatus, stripeWebhook } from '../Controller/coursePurchaseController.js';
+import  isAuthenticated  from "../Middlewares/isAuthenticated.js";
+
 
 const router = express.Router();
 
-router.post( '/checkout/create-checkout-session', isAuthenticated, createCheckoutSession);
+// Secure checkout route
+router.post('/checkout/create-checkout-session', isAuthenticated, createCheckoutSession);
 
-router.post('/webhook', express.json({type: 'application/json'}), stripeWebhook);
-// router.get('/course/:courseId/detail-with-status', isAuthenticated, getCoursePurchase);
+// Stripe requires raw body for signature verification
+router.post('/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
+
+// Route to get course details with purchase status
+router.get('/course/:courseId/detail-with-status',isAuthenticated, getCourseDetailsWithPurchaseStatus);
+
+// Route to get all purchased courses
+router.get('/',isAuthenticated, getAllPurchasedCourses);
 
 export default router;
