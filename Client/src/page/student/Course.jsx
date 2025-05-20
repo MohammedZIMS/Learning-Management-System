@@ -73,10 +73,12 @@ const Course = ({ course }) => {
           </div>
 
           {/* Course Description */}
+          <Link to={`/course-detail/${course?._id}`}>
           <div
             className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3"
             dangerouslySetInnerHTML={{ __html: course?.description }}
-          />
+            />
+          </Link>
         </CardContent>
 
         {/* Price and Enrollment */}
