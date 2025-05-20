@@ -9,6 +9,7 @@ export const purchaseApi = createApi({
         credentials: "include",
     }),
     endpoints: (builder) => ({
+        // Route to create a checkout session
         createCheckoutSession: builder.mutation({
             query: (courseData) => ({
                 url: "/checkout/create-checkout-session",
@@ -20,10 +21,28 @@ export const purchaseApi = createApi({
                 },
             }),
         }),
+
+        // Route to handle Stripe webhook events
         stripeWebhook: builder.mutation({
             query: () => ({
                 url: "/webhook",
                 method: "POST",
+            }),
+        }),
+
+        // Route to get course details with purchase status
+        getCourseDetailsWithPurchaseStatus: builder.query({
+            query: (courseId) => ({
+                url: `/course/${courseId}/detail-with-status`,
+                method: "GET",
+            }),
+        }),
+
+        // Route to get all purchased courses
+        getAllPurchasedCourses: builder.query({
+            query: () => ({
+                url: "/",
+                method: "GET",
             }),
         }),
     }),
@@ -31,5 +50,7 @@ export const purchaseApi = createApi({
 
 export const {
     useCreateCheckoutSessionMutation,
-    useStripeWebhookMutation
+    useStripeWebhookMutation,
+    useGetCourseDetailsWithPurchaseStatusQuery,
+    useGetAllPurchasedCoursesQuery,
 } = purchaseApi;
