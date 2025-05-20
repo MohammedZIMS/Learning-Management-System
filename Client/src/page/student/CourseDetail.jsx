@@ -2,50 +2,38 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BadgeInfo, Clock, Star, Users, PlayCircle, Lock, ChevronDown } from 'lucide-react';
 import ReactPlayer from 'react-player';
-import BuyCourseButton from '@/components/BysCourseButton';
+import BuyCourseButton from '@/components/BysCourseButton'; // Ensure correct import path
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { 
-  useGetCourseByIdQuery, 
-  useGetCouseLectureModuleQuery, 
-  useGetLectureByIdQuery 
+import {
+  useGetCouseLectureModuleQuery
 } from '@/features/api/courseApi';
+import { useGetCourseDetailsWithPurchaseStatusQuery } from '@/features/api/purchaseApi';
+import { Button } from '@/components/ui/button';
 
 const CourseDetail = () => {
   const { courseId } = useParams();
-  const { lectureId } = useParams();
   const navigate = useNavigate();
   const [expandedModules, setExpandedModules] = useState({});
+
   
-  // API hooks with proper naming and error handling
-  const { data, isLoading, error } = useGetCourseByIdQuery(courseId);
-  const { 
-    data: moduleData, 
-    isLoading: modulesLoading,
-    error: modulesError 
-  } = useGetCouseLectureModuleQuery(courseId); // Fixed typo in hook name
 
-  const { data: lectureData } = useGetLectureByIdQuery(lectureId);
+  const { data, isLoading, isError } = useGetCourseDetailsWithPurchaseStatusQuery(courseId);
+  const { data: moduleData, isLoading: modulesLoading, error: modulesError } = useGetCouseLectureModuleQuery(courseId);
 
-  const course = data?.course;
-  const lecture = lectureData?.lecture;
-  const purchasedCourse = course?.isEnrolled || false;
-
-  // Handle loading and error states for both queries
   if (isLoading || modulesLoading) return <p className="text-center mt-20">Loading course...</p>;
-  if (error || modulesError || !course) return <p className="text-center mt-20 text-red-500">Course not found.</p>;
+  if (isError || modulesError || !data?.course) return <p className="text-center mt-20 text-red-500">Course not found.</p>;
 
-  // Get modules from moduleData if available, fallback to course.modules
+  const { course, purchase } = data;
+  console.log("Purchase Data:", purchase);
+
+  
   const modules = moduleData?.modules || course.modules || [];
-  const totalLectures = modules.reduce(
-    (acc, module) => acc + (module.lectures?.length || 0),
-    0
-  );
+  const totalLectures = modules.reduce((acc, m) => acc + (m.lectures?.length || 0), 0);
 
   const toggleModule = (index) => {
-    setExpandedModules((prev) => ({ ...prev, [index]: !prev[index] }));
+    setExpandedModules(prev => ({ ...prev, [index]: !prev[index] }));
   };
-
 
   return (
     <div className='mt-20 space-y-5'>
@@ -54,8 +42,10 @@ const CourseDetail = () => {
         <div className='max-w-7xl mx-auto py-8 px-4 md:px-8'>
           <h1 className='text-3xl md:text-4xl font-bold'>{course.courseTitle}</h1>
           <p className="text-base md:text-lg text-gray-300">{course.subTitle}</p>
-          <p>Created by <span className='text-[#C0C4FC] underline italic'>{course.instructor || "ZIMS Academy"}</span></p>
+          <p>Created by <span className='text-[#C0C4FC] underline italic'>{course.creator?.name || "ZIMS Academy"}</span></p>
         </div>
+
+        {/* Meta Info */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-wrap items-center gap-4 text-sm text-gray-300 mt-4">
           <div className='flex items-center gap-2'><BadgeInfo size={16} /><span>Last updated: {new Date(course.updatedAt).toLocaleDateString()}</span></div>
           <div className='flex items-center gap-2'><Clock size={16} /><span>{course.duration || "N/A"} hours</span></div>
@@ -66,7 +56,7 @@ const CourseDetail = () => {
 
       {/* Main Content */}
       <div className='max-w-7xl mx-auto py-8 px-4 md:px-8 flex flex-col lg:flex-row gap-8'>
-        {/* Course Details */}
+        {/* Left - Course Content */}
         <div className='flex-1'>
           {/* Description */}
           <section className='mb-8'>
@@ -87,23 +77,18 @@ const CourseDetail = () => {
                 </div>
               </CardHeader>
               <CardContent className='p-0'>
-                {modules.map((module, moduleIndex) => (
-                  <div key={moduleIndex} className='border-b'>
-                    <div
-                      className='p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer'
-                      onClick={() => toggleModule(moduleIndex)}
-                    >
+                {modules.map((module, index) => (
+                  <div key={index} className='border-b'>
+                    <div className='p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer' onClick={() => toggleModule(index)}>
                       <div className='flex justify-between items-center'>
-                        <h3 className='font-semibold'>
-                          Module {moduleIndex + 1}: {module.title}
-                        </h3>
-                        <ChevronDown className={`h-5 w-5 transition-transform ${expandedModules[moduleIndex] ? 'rotate-180' : ''}`} />
+                        <h3 className='font-semibold'>Module {index + 1}: {module.title}</h3>
+                        <ChevronDown className={`h-5 w-5 transition-transform ${expandedModules[index] ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
-                    {expandedModules[moduleIndex] && (
+                    {expandedModules[index] && (
                       <div className='divide-y'>
-                        {(module.lectures || []).map((lecture, lectureIndex) => (
-                          <div key={lectureIndex} className='p-4 flex justify-between items-center hover:bg-gray-50'>
+                        {(module.lectures || []).map((lecture, lIdx) => (
+                          <div key={lIdx} className='p-4 flex justify-between items-center hover:bg-gray-50'>
                             <div className='flex items-center gap-3'>
                               {lecture.isPreviewFree || purchasedCourse ? (
                                 <PlayCircle size={18} className='text-green-500' />
@@ -124,16 +109,16 @@ const CourseDetail = () => {
           </section>
         </div>
 
-        {/* Sidebar */}
+        {/* Right - Sidebar */}
         <div className='lg:w-80 xl:w-96 flex-shrink-0'>
           <Card className='sticky top-24 shadow-xl'>
             <div className='aspect-video'>
               <ReactPlayer
-                url={course.previewVideo}
+                url={course.modules[0]?.lectures[0].mediaUrl || course.courseVideoUrl}
                 width="100%"
                 height="100%"
                 controls
-                light={course.courseThumbnail}
+                light={course.courseThumbnail || "https://res.cloudinary.com/ddy6jvgr4/image/upload/v1740411754/xfn4jilb36jnjjplfxne.jpg"}
                 playIcon={<PlayCircle className='text-white w-16 h-16' />}
               />
             </div>
@@ -141,15 +126,29 @@ const CourseDetail = () => {
               <div className='flex justify-between items-start mb-4'>
                 <h3 className='text-xl font-bold'>${course.coursePrice?.toFixed(2) || 0}</h3>
               </div>
-              
-              <BuyCourseButton
-                courseId={course.id}
-                courseName={course.courseTitle}
-                amount={course.coursePrice}
-              />
+
+              {purchase ? (
+                <>
+                  <Button className='w-full' onClick={() => navigate(`/course-progress/${courseId}`)}>
+                    Continue Course
+                  </Button>
+                  <Button variant='outline' className='w-full mt-2' onClick={() => navigate(-1)}>
+                    Back to Home
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <BuyCourseButton
+                    courseId={course._id}
+                    courseName={course.courseTitle}
+                    amount={course.coursePrice}
+                  />
+                  <Button variant='outline' className='w-full mt-2'>Add to Cart</Button>
+                </>
+              )}
 
               <div className='text-sm mt-6 space-y-3'>
-                <div className='flex justify-between'><span>Level</span><span>{course.courseLevel}</span></div>
+                <div className='flex justify-between'><span>Level</span><span>{course.courseLevel || "N/A"}</span></div>
                 <div className='flex justify-between'><span>Access</span><span>Lifetime</span></div>
                 <div className='flex justify-between'><span>Lectures</span><span>{totalLectures}</span></div>
               </div>
