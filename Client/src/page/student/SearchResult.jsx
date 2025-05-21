@@ -1,37 +1,65 @@
-
 import { Badge } from '@/components/ui/badge'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
 const SearchResult = ({ course }) => {
-    const courseId = "1234"
-    return (
-        <div className='flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-300 py-4 gap-4'>
-            <Link
-                to={`/course-details/${courseId}`}
-                className="flex flex-col md:flex-row gap-4 w-full md:w-auto"
-            >
-                <img
-                    src="https://res.cloudinary.com/ddy6jvgr4/image/upload/v1746772654/jlh0ao363jxbfh7t8kx2.png"
-                    alt="course-thumbnial"
-                    className='h-32 w-full md:w-56 object-cover rounded'
-                />
+  return (
+    // Main container with improved spacing and hover effects
+    <article className="group grid grid-cols-1 md:grid-cols-[240px_1fr_120px] gap-4 p-4 border-b hover:bg-muted/50 transition-colors">
+      {/* Course thumbnail with aspect ratio preservation */}
+      <Link 
+        to={`/course-detail/${course._id}`}
+        className="relative block overflow-hidden rounded-lg aspect-video"
+      >
+        <img
+          src={course.courseThumbnail}
+          alt={`${course.courseTitle} thumbnail`}
+          className="object-cover w-full h-full transition-transform group-hover:scale-105"
+        />
+      </Link>
 
-                <div className="flex flex-col gap-2">
-                    <h1 className="font-bold text-lg md:text-xl">course courseTitle</h1>
-                    <p className="text-sm text-gray-600">course subTitle</p>
-                    <p className="text-sm text-gray-700">
-                        Intructor: <span className="font-bold">course creator name</span>{" "}
-                    </p>
-                    <Badge className="w-fit mt-2 md:mt-0">courseLevel</Badge>
-                </div>
-            </Link>
+      {/* Course details section */}
+      <div className="space-y-2">
+        {/* Title with hover underline effect */}
+        <Link 
+          to={`/course-detail/${course._id}`} 
+          className="inline-block"
+        >
+          <h2 className="text-lg font-semibold hover:underline">
+            {course.courseTitle}
+          </h2>
+        </Link>
+        
+        {/* Subtitle with line clamp for overflow */}
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {course.subTitle}
+        </p>
 
-            <div className="mt-4 md:mt-0 md:text-right w-full md:w-auto">
-                <h1 className="font-bold text-lg md:text-xl">course coursePrice</h1>
-            </div>
+        {/* Instructor info with semantic markup */}
+        <div className="text-sm">
+          <span className="text-muted-foreground">Instructor: </span>
+          <span className="font-medium">{course.creator.name}</span>
         </div>
-    )
+
+        {/* Course level badge with dynamic variant */}
+        <Badge 
+          className="w-fit capitalize"
+        >
+          {course.courseLevel}
+        </Badge>
+      </div>
+
+      {/* Price section with proper currency formatting */}
+      <div className="flex flex-col items-end justify-center">
+        <p className="text-lg font-semibold">
+          {new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'BDT'
+          }).format(course.coursePrice)}
+        </p>
+      </div>
+    </article>
+  )
 }
 
 export default SearchResult
