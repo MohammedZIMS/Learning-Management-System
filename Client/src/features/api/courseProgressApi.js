@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { build } from "vite";
 
 const COURSE_PROGRESS_API = "http://localhost:8081/api/v1/progress"
 
@@ -21,7 +20,7 @@ export const courseProgressApi = createApi({
 
         updateLectureProgress: builder.mutation({
             query: ({courseId, lectureId}) => ({
-                url: `/${courseId}/lecture/${lectureId}`,
+                url: `/${courseId}/lecture/${lectureId}/view`,
                 method:"POST"
             }),
         }),
