@@ -24,6 +24,29 @@ export const courseApi = createApi({
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
 
+    getSearchCourse: builder.query({
+      query: ({ searchQuery, categories, sortByPrice }) => {
+        // Build qiery string
+        let queryString = `/search?query=${encodeURIComponent(searchQuery)}`;
+
+        // append cateogry 
+        if (categories && categories.length > 0) {
+          const categoriesString = categories.map(encodeURIComponent).join(",");
+          queryString += `&categories=${categoriesString}`;
+        }
+
+        // Append sortByPrice is available
+        if (sortByPrice) {
+          queryString += `&sortByPrice=${encodeURIComponent(sortByPrice)}`;
+        }
+
+        return {
+          url: queryString,
+          method: "GET",
+        }
+      }
+    }),
+
     // Query to fetch all published courses
     getPublishedCourses: builder.query({
       query: () => ({
@@ -43,7 +66,7 @@ export const courseApi = createApi({
     }),
 
     // Query to fetch a specific course by its ID
-    getCourseById: builder.query({  
+    getCourseById: builder.query({
       query: (courseId) => ({
         url: `/${courseId}`,
         method: "GET",
@@ -63,10 +86,10 @@ export const courseApi = createApi({
 
     // Mutation to create a new lecture module within a course
     createLectureModule: builder.mutation({
-      query: ({title, courseId}) => ({
+      query: ({ title, courseId }) => ({
         url: `/${courseId}/modules`,
         method: "POST",
-        body: {title}
+        body: { title }
       }),
     }),
 
@@ -84,10 +107,10 @@ export const courseApi = createApi({
       query: ({ lectureTitle, courseId, moduleId }) => ({
         url: `/${courseId}/modules/${moduleId}/lectures`,
         method: "POST",
-        body: { 
+        body: {
           lectureTitle,
-          courseId,       
-          moduleId       
+          courseId,
+          moduleId
         }
       }),
       invalidatesTags: ["Lecture"],
@@ -140,11 +163,12 @@ export const courseApi = createApi({
 });
 
 // Export hooks correctly
-export const { 
-  useCreateCourseMutation, 
+export const {
+  useCreateCourseMutation,
+  useGetSearchCourseQuery,
   useGetPublishedCoursesQuery,
-  useGetCreatorCoursesQuery, 
-  useGetCourseByIdQuery, 
+  useGetCreatorCoursesQuery,
+  useGetCourseByIdQuery,
   useEditCourseMutation,
   useCreateLectureModuleMutation,
   useGetCouseLectureModuleQuery,
