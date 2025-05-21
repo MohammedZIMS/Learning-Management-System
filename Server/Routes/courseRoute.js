@@ -8,12 +8,14 @@ import {
     getLecturesByModuleId, getLectureById, 
     removeLecture, editLecture,
     togglePublishCourse,
-    getPublishedCourses} from "../Controller/courseController.js";
+    getPublishedCourses,
+    searchCourse} from "../Controller/courseController.js";
 
 const router = express.Router();
 
 // Course Routes
 router.post("/", isAuthenticated, upload.single("courseThumbnail"), createCourse); // Correct field name
+router.get("/search", isAuthenticated, searchCourse); // Search Course
 router.get("/published-courses", isAuthenticated, getPublishedCourses); // Corrected route for published courses
 router.get("/", isAuthenticated, getCreatorCourses); // Corrected route for creator courses
 router.put("/:courseId", isAuthenticated, upload.single("courseThumbnail"), editCourse); // Correct method (PUT)
