@@ -57,6 +57,7 @@ const HeroSection = () => {
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Button
             variant="outline"
+            onClick={()=> navigate(`/course/search?query`)}
             className="bg-transparent border-2 border-white/30 hover:border-blue-500 text-white hover:text-white hover:bg-blue-500/10 h-12 px-8 rounded-xl transition-all hover:scale-105"
           >
             Explore Popular Courses
