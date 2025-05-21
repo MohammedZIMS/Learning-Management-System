@@ -5,42 +5,65 @@ import {
   useGetCouseLectureModuleQuery
 } from '@/features/api/courseApi';
 import {
-  useGetCourseProgressQuery
+  useCompleteCourseMutation,
+  useGetCourseProgressQuery,
+  useInCompleteCourseMutation,
+  useUpdateLectureProgressMutation
 } from '@/features/api/courseProgressApi';
 import {
   CheckCircle2,
   CirclePlay,
   Clock,
-  ChevronDown
+  ChevronDown,
+  CheckCircle
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const CourseProgress = () => {
+  // Router hooks
   const { courseId } = useParams();
   const navigate = useNavigate();
+
+  // State management
   const [expandedModules, setExpandedModules] = useState({});
   const [currentLecture, setCurrentLecture] = useState(null);
 
-  // Fetch course progress and module structure
-  const { data, isLoading, isError } = useGetCourseProgressQuery(courseId);
+  // Data fetching hooks
+  const { data, isLoading, isError, refetch } = useGetCourseProgressQuery(courseId);
+  const [updateLectureProgress] = useUpdateLectureProgressMutation();
+  const [completeCourse, { data: markCompleteData, isSuccess: completedSuccess }] = useCompleteCourseMutation();
+  const [inCompleteCourse, { data: markIncompleteData, isSuccess: incompletedSuccess }] = useInCompleteCourseMutation();
   const {
     data: moduleData,
     isLoading: modulesLoading,
     error: modulesError
   } = useGetCouseLectureModuleQuery(courseId);
 
-  // Show loading and error states
+  // Effect for handling completion status changes
+  useEffect(() => {
+    if (completedSuccess) {
+      refetch();
+      toast.success(markCompleteData.message);
+    }
+    if (incompletedSuccess) {
+      refetch();
+      toast.success(markIncompleteData.message);
+    }
+  }, [completedSuccess, incompletedSuccess]);
+
+  // Loading and error states
   if (isLoading || modulesLoading) return <div className="text-center mt-20">Loading course...</div>;
   if (isError || modulesError || !data?.data) return <div className="text-center mt-20 text-red-500">Course not found.</div>;
 
+  // Extracted data
   const courseDetails = data.data.courseDetails;
   const progress = data.data.progress || [];
   const completed = data.data.Completed || false;
   const modules = moduleData?.modules || [];
 
-  const initialLecture = currentLecture || modules?.[0]?.lectures?.[0];
-
+  // Helper functions
   const toggleModule = (index) => {
     setExpandedModules(prev => ({ ...prev, [index]: !prev[index] }));
   };
@@ -49,104 +72,159 @@ const CourseProgress = () => {
     return progress.some(prog => prog.lectureId === lectureId && prog.viewed);
   };
 
-  const handleSelectLecture = (lecture) => {
-    setCurrentLecture(lecture);
-    // TODO: call API to update progress if needed
+  const handleLectureProgress = async (lectureId) => {
+    await updateLectureProgress({ courseId, lectureId });
+    refetch();
   };
 
+  const handleSelectLecture = (lecture) => {
+    setCurrentLecture(lecture);
+    handleLectureProgress(lecture._id);
+  };
+
+  const handleCompleteCourse = async () => {
+    await completeCourse(courseId);
+  };
+
+  const handleInCompleteCourse = async () => {
+    await inCompleteCourse(courseId);
+  };
+
+  // Derived values
   const allLectures = modules.flatMap(mod => mod.lectures || []);
-  const current = currentLecture || initialLecture;
+  const current = currentLecture || modules?.[0]?.lectures?.[0];
   const lectureIndex = allLectures.findIndex((lec) => lec._id === current?._id);
 
   return (
-    <div className='max-w-7xl mx-auto py-8 px-4 md:px-8 mt-20'>
-      {/* Course Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start mb-8">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-2">{courseDetails.courseTitle}</h1>
+    <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 mt-20">
+      {/* Course Header Section */}
+      <div className="grid gap-6 mb-12">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            {courseDetails.courseTitle}
+          </h1>
           <div className="flex items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              <span>{courseDetails.duration || 0}h total length</span>
+              <Clock className="h-5 w-5 text-primary" />
+              <span>{courseDetails.duration || 0}h total duration</span>
             </div>
-            <Badge variant="outline" className="capitalize">
+            <Badge variant="secondary" className="capitalize shadow-sm">
               {courseDetails.courseLevel || "Beginner"}
             </Badge>
           </div>
         </div>
-        <Button className="mt-4 md:mt-0">
-          <CheckCircle2 className="h-5 w-5 mr-2" />
-          Mark as Completed
-        </Button>
+        
+        {/* Completion Status Button */}
+        <div className="flex justify-end">
+          <Button
+            onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
+            variant={completed ? "outline" : "default"}
+            className="gap-2 shadow-md hover:shadow-lg transition-shadow"
+          >
+            {completed ? (
+              <>
+                <CheckCircle className="h-5 w-5" />
+                <span>Course Completed</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-5 w-5" />
+                <span>Mark as Completed</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left - Video Section */}
-        <div className="lg:w-[65%]">
-          <Card className="shadow-lg">
-            <div className="aspect-video bg-black">
+      {/* Main Content Grid */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Video Player Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="shadow-xl border-0">
+            <div className="aspect-video bg-gray-900 rounded-t-lg overflow-hidden">
               <video
-              src={currentLecture?.mediaUrl || initialLecture.mediaUrl}
-              controls
-              className="w-full h-auto md:rounded-lg"
-              onPlay={() =>
-                handleLectureProgress(currentLecture?._id || initialLecture._id)
-              }
-            />
+                src={current?.mediaUrl}
+                controls
+                className="w-full h-full object-cover"
+                onPlay={() => handleLectureProgress(current?._id)}
+              />
             </div>
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">
-                Lecture {lectureIndex + 1}: {current?.lectureTitle || "Untitled"}
-              </h3>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex justify-between items-start">
+                <h3 className="text-2xl font-semibold">
+                  {current?.lectureTitle || "Select a lecture"}
+                </h3>
+                <Badge variant="outline" className="text-sm">
+                  Lecture {lectureIndex + 1} of {allLectures.length}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground">
+                {current?.description || "No description available"}
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right - Sidebar */}
-        <div className="lg:w-[34.5%] h-[calc(100vh-200px)] overflow-y-auto">
-          <Card className="shadow-lg">
+        {/* Curriculum Sidebar */}
+        <div className="lg:col-span-1">
+          <Card className="shadow-xl border-0 sticky top-28 max-h-[calc(100vh-200px)] overflow-y-auto">
             <CardContent className="p-6">
-              <h2 className='text-2xl font-bold mb-6'>Course Curriculum</h2>
-              <div className='space-y-4'>
+              <h2 className="text-2xl font-bold mb-6">Course Content</h2>
+              
+              {/* Modules Accordion */}
+              <div className="space-y-4">
                 {modules.map((module, index) => (
-                  <Card key={index} className='hover:shadow-md transition-shadow'>
-                    <div
-                      className="cursor-pointer"
+                  <Card key={index} className="overflow-hidden">
+                    <button
                       onClick={() => toggleModule(index)}
+                      className="w-full p-4 hover:bg-accent transition-colors"
                     >
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <h2 className='text-lg font-semibold'>{module.title}</h2>
-                        <ChevronDown className={`h-5 w-5 transition-transform ${expandedModules[index] ? 'rotate-180' : ''}`} />
-                      </CardHeader>
-                    </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <h3 className="font-semibold">{module.title}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {module.lectures?.length || 0} lectures
+                          </p>
+                        </div>
+                        <ChevronDown className={`h-5 w-5 transition-transform ${
+                          expandedModules[index] ? 'rotate-180' : ''
+                        }`} />
+                      </div>
+                    </button>
 
+                    {/* Lectures List */}
                     {expandedModules[index] && (
-                      <CardContent className="pt-0">
-                        <div className="space-y-4">
-                          {module.lectures?.map((lecture, lIdx) => (
-                            <div
-                              key={lIdx}
-                              className={`flex items-center justify-between p-3 hover:bg-accent rounded-lg cursor-pointer ${lecture._id === currentLecture?._id ? "bg-gray-200 " : "dark:dark:bg-gray-800"} `}
-                              onClick={() => handleSelectLecture(lecture)}
-                            >
-                              <div className="flex items-center gap-2">
+                      <div className="border-t">
+                        {module.lectures?.map((lecture, lIdx) => (
+                          <div
+                            key={lIdx}
+                            onClick={() => handleSelectLecture(lecture)}
+                            className={`p-4 cursor-pointer transition-colors ${
+                              lecture._id === current?._id 
+                                ? 'bg-primary/10 border-l-4 border-primary'
+                                : 'hover:bg-accent'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
                                 {isLectureCompleted(lecture._id) ? (
-                                  <CheckCircle2 size={20} className='text-green-500' />
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
                                 ) : (
-                                  <CirclePlay size={20} className='text-gray-500' />
+                                  <CirclePlay className="h-5 w-5 text-muted-foreground" />
                                 )}
-                                <span className="text-sm">{lecture.lectureTitle}</span>
+                                <span className="text-sm">
+                                  {lecture.lectureTitle}
+                                </span>
                               </div>
-                              {isLectureCompleted(lecture._id) && (
-                                <Badge variant="outline" className="bg-green-200 text-green-600">
-                                  Completed
+                              {lecture._id === current?._id && (
+                                <Badge variant="secondary" className="animate-pulse">
+                                  Playing
                                 </Badge>
                               )}
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </Card>
                 ))}
