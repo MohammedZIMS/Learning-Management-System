@@ -5,66 +5,112 @@ import { Separator } from '@/components/ui/separator';
 import React, { useState } from 'react'
 
 const categories = [
+    // Existing categories
     { id: "nextjs", label: "Next JS" },
     { id: "data science", label: "Data Science" },
     { id: "frontend development", label: "Frontend Development" },
     { id: "fullstack development", label: "Fullstack Development" },
     { id: "mern stack development", label: "MERN Stack Development" },
     { id: "backend development", label: "Backend Development" },
-    { id: "javascript", label: "Javascript" },
+    { id: "javascript", label: "JavaScript" },
     { id: "python", label: "Python" },
     { id: "docker", label: "Docker" },
     { id: "mongodb", label: "MongoDB" },
     { id: "html", label: "HTML" },
+    { id: "typescript", label: "TypeScript" },
+    { id: "react", label: "React" },
+    { id: "node js", label: "Node.js" },
+    { id: "aws", label: "AWS" },
+    { id: "graphql", label: "GraphQL" },
+    { id: "kubernetes", label: "Kubernetes" },
+    { id: "sql", label: "SQL" },
+    { id: "css", label: "CSS" },
+    { id: "rest api", label: "REST API" },
+    { id: "git", label: "Git" },
+    { id: "redux", label: "Redux" },
+    { id: "nestjs", label: "NestJS" },
+    { id: "postgresql", label: "PostgreSQL" },
+    { id: "machine learning", label: "Machine Learning" },
+    { id: "cybersecurity", label: "Cybersecurity" },
+    { id: "ui ux", label: "UI/UX Design" },
+    { id: "react native", label: "React Native" },
+    { id: "web3", label: "Web3" },
+    { id: "blockchain", label: "Blockchain" }
 ];
 
 const Filter = ({ handleFilterChange }) => {
-
+    // State management for selected filters
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [sortByPrice, setSortByPrice] = useState("");
 
+    // Handle category checkbox changes
     const handleCategoryChange = (categoryId) => {
-        setSelectedCategories((prevCategories) => {
-            const newCategories = prevCategories.includes(categoryId)
-                ? prevCategories.filter((id) => id !== categoryId)
-                : [...prevCategories, categoryId];
-
+        setSelectedCategories(prev => {
+            const newCategories = prev.includes(categoryId)
+                ? prev.filter(id => id !== categoryId)  // Remove if unchecked
+                : [...prev, categoryId];               // Add if checked
+                
+            // Propagate changes to parent component
             handleFilterChange(newCategories, sortByPrice);
             return newCategories;
         });
     };
-    return (
-        <div className='w-full md:w-[20%]'>
-            <div className='flex items-center justify-between'>
-                <h1 className="font-semibold text-lg md:text-xl">Filter Options</h1>
 
-                <Select>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectLabel>Sort by price</SelectLabel>
-                            <SelectItem value="low">Low to High</SelectItem>
-                            <SelectItem value="high">High to Low</SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+    // Handle price sorting selection
+    const selectByPriceHandler = (selectedValue) => {
+        setSortByPrice(selectedValue);
+        handleFilterChange(selectedCategories, selectedValue);
+    }
+
+    return (
+        <div className='w-full md:w-[260px] sticky top-20 h-fit p-6 bg-background rounded-lg border shadow-sm'>
+            {/* Header Section */}
+            <div className='space-y-4'>
+                <div className='flex items-center justify-between'>
+                    <h1 className="text-lg font-semibold">Filters</h1>
+                    
+                    {/* Price Sorting Dropdown */}
+                    <Select onValueChange={selectByPriceHandler}>
+                        <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Price Sorting</SelectLabel>
+                                <SelectItem value="low">Price: Low to High</SelectItem>
+                                <SelectItem value="high">Price: High to Low</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                <Separator className="bg-muted" />
             </div>
-            <Separator className="my-4" />
-            <div>
-                <h1 className="font-semibold mb-2">CATEGORY</h1>
-                {categories.map((category) => (
-                    <div className="flex items-center space-x-2 my-2">
-                        <Checkbox
-                            id={category.id}
-                            onCheckedChange={() => handleCategoryChange(category.id)}
-                        />
-                        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            {category.label}
-                        </Label>
-                    </div>
-                ))}
+
+            {/* Category Filter Section */}
+            <div className='mt-6 space-y-3'>
+                <h2 className="text-sm font-medium text-muted-foreground">CATEGORIES</h2>
+                
+                <div className='space-y-2'>
+                    {categories.map((category) => (
+                        <div 
+                            key={category.id} 
+                            className="flex items-center space-x-3 p-2 hover:bg-accent rounded-md transition-colors"
+                        >
+                            <Checkbox
+                                id={category.id}
+                                checked={selectedCategories.includes(category.id)}
+                                onCheckedChange={() => handleCategoryChange(category.id)}
+                            />
+                            <Label 
+                                htmlFor={category.id}
+                                className="text-sm font-medium cursor-pointer select-none"
+                            >
+                                {category.label}
+                            </Label>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )
