@@ -1,10 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const navigate = useNavigate();
+
+  const searchHandler = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      navigate(`/course/search?query=${searchQuery}`);
+    }
+    setSearchQuery("");
+  };
+
   return (
-    <div 
+    <div
       className="relative min-h-[600px] flex items-center justify-center px-4 py-24 text-center"
       style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80')`,
@@ -23,14 +37,16 @@ const HeroSection = () => {
         </div>
 
         <div className="max-w-2xl mx-auto bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 shadow-2xl">
-          <form className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={searchHandler} className="flex flex-col sm:flex-row gap-4">
             <Input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="What do you want to learn today?"
               className="flex-grow border-none bg-white/90 dark:bg-gray-900/80 h-14 px-6 rounded-lg text-lg shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg transition-all"
             >
               Search Courses
@@ -39,8 +55,8 @@ const HeroSection = () => {
         </div>
 
         <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="bg-transparent border-2 border-white/30 hover:border-blue-500 text-white hover:text-white hover:bg-blue-500/10 h-12 px-8 rounded-xl transition-all hover:scale-105"
           >
             Explore Popular Courses
