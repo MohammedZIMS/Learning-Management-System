@@ -41,7 +41,7 @@ export const purchaseApi = createApi({
         // Route to get all purchased courses
         getAllPurchasedCourses: builder.query({
             query: () => ({
-                url: "/",
+                url: "",
                 method: "GET",
             }),
         }),
