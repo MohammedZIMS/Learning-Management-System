@@ -16,6 +16,7 @@ import CreateLecture from './page/admin/lectures/CreateLecture';
 import EditLecture from './page/admin/lectures/EditLecture';
 import CourseDetail from './page/student/CourseDetail';
 import CourseProgress from './page/student/courseProgress';
+import SearchPage from './page/student/SearchPage';
 
 const appRouter = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const appRouter = createBrowserRouter([
         element: <Profile/>,
       },
       {
+        path: 'course/search',
+        element: <SearchPage/>,
+      },
+      {
         path: 'course',
         element: <Courses/>,
       },
@@ -52,8 +57,8 @@ const appRouter = createBrowserRouter([
         element: <CourseDetail/>,
       },
       {
-        path: 'course-detail/:courseId',
-        element: <CourseDetail/>,
+        path: 'course-progress/:courseId',
+        element: <CourseProgress/>,
       },
       {
         path: 'dashboard',
