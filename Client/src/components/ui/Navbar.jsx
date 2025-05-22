@@ -48,8 +48,12 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto hidden md:flex justify-between items-center gap-10 h-full">
         {/* Logo and Brand Name */}
         <div className="flex items-center gap-2">
-          <School size={30} />
-          <h1 className="hidden md:block font-extrabold text-2xl">Shikha Bazar</h1>
+          <Link to="/">
+            <School size={30} />
+          </Link>
+          <Link to="/">
+            <h1 className="hidden md:block font-extrabold text-2xl">Shikha Bazar</h1>
+          </Link>
         </div>
 
         {/* User Icon and Dark Mode Toggle */}
@@ -83,7 +87,7 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </Link>
                 {user?.role === "instructor" ? (
-                  <Link to="/dashboard">
+                  <Link to="/dashboard/instructor-dashboard">
                     <DropdownMenuItem className="cursor-pointer">
                       Instructor Dashboard
                     </DropdownMenuItem>
@@ -160,7 +164,7 @@ const MobileNavbar = ({ user, logoutHandler }) => {
                 <Link to="/profile" className="hover:text-blue-500">Profile</Link>
               </SheetClose>
               <SheetClose asChild>
-                <Link to={user?.role === "instructor" ? "/instructor-dashboard" : "/student-dashboard"} 
+                <Link to={user?.role === "instructor" ? "/dashboard" : "/dashboard"} 
                       className="hover:text-blue-500">
                   Dashboard
                 </Link>
@@ -187,7 +191,7 @@ const MobileNavbar = ({ user, logoutHandler }) => {
                 </Button>
               </SheetClose>
               <SheetClose asChild>
-                <Button onClick={() => navigate("/register")} variant="outline" className="w-full">
+                <Button onClick={() => navigate("/login")} variant="outline" className="w-full">
                   Signup
                 </Button>
               </SheetClose>
