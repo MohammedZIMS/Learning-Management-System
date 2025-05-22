@@ -4,10 +4,11 @@ import { BookOpen, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
+import { useLoadUserQuery } from '@/features/api/authApi';
 
 const MyLearning = () => {
-    const isLoading = false;
-    const myLearningCourse = [];
+    const {data, isLoading} = useLoadUserQuery();
+    const myLearning = data.user.enrolledCourses || [];
 
     const navigator = useNavigate();
   return (
@@ -22,7 +23,7 @@ const MyLearning = () => {
         <div className="my-5">
             {isLoading ? (
                 <MyLearningSkeleton />
-            ) : myLearningCourse.length === 0 ? (
+            ) : myLearning.length === 0 ? (
                 <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
                     <div className="mb-6 p-6 bg-blue-100 dark:bg-blue-900 rounded-full">
                         <BookOpen className="w-16 h-16 text-blue-600 dark:text-blue-400" />
@@ -38,7 +39,7 @@ const MyLearning = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myLearningCourse.map((course, index) => (
+                    {myLearning.map((course, index) => (
                         <Course key={index} course={course} />
                     ))}
                 </div>
