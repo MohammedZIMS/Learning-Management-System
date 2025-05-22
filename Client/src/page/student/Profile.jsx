@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, SquareUser, Pencil, BookOpen } from 'lucide-react';
+import { Loader2, SquareUser, Pencil, BookOpen, PlusCircle } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -193,7 +193,10 @@ const Profile = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   You haven't enrolled in any courses yet
                 </p>
-                <Button className="gap-2" onClick={()=> navigator(`/course`)}>Browse Courses</Button>
+                <Button className="gap-2" onClick={()=> navigator(`/course`)}>
+                  <PlusCircle className="w-5 h-5" />
+                  Browse Courses
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
