@@ -104,30 +104,11 @@ const InstructorSidebar = () => {
             <BookOpen size={20} className="text-yellow-500" />
             <span>Create Course</span>
           </Link>
-          <Link 
-            to="/dashboard/assignments" 
-            className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
-          >
-            <FileText size={20} className="text-pink-500" />
-            <span>Assignments</span>
-          </Link>
+          
         </nav>
       </div>
 
-      <div className="space-y-2">
-        <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2">
-          Financial
-        </h4>
-        <nav className="space-y-1">
-          <Link 
-            to="/dashboard/earnings" 
-            className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
-          >
-            <DollarSign size={20} className="text-green-500" />
-            <span>Earnings</span>
-          </Link>
-        </nav>
-      </div>
+      
     </>
   );
 };
