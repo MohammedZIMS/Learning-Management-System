@@ -40,7 +40,7 @@ const Course = ({ course }) => {
 
         {/* Course Content */}
         <CardContent className="p-5 space-y-4">
-          <h1 title={course?.courseTitle} className="font-bold text-xl hover:text-blue-600 transition-colors cursor-pointer">
+          <h1 title={course?.courseTitle} className="font-bold text-xl hover:text-blue-600 transition-colors cursor-pointer truncate">
             <Link to={`/course-detail/${course?._id}`}>
               {course?.courseTitle || "Course Title"}
             </Link>
@@ -64,12 +64,12 @@ const Course = ({ course }) => {
             </div>
 
             {/* Rating */}
-            <div className="flex items-center text-yellow-500">
+            {/* <div className="flex items-center text-yellow-500">
               {renderStars(course?.averageRating || 0)}
               <span className="ml-1 text-sm text-gray-500">
                 ({course?.averageRating?.toFixed(1) || 0.0})
               </span>
-            </div>
+            </div> */}
           </div>
 
           {/* Course Description */}
@@ -88,12 +88,14 @@ const Course = ({ course }) => {
               ৳{course?.coursePrice}
             </span>
             <p className="text-sm text-gray-500">
-              {course?.studentsCount} students enrolled
+              {course?.enrolledStudents} students enrolled
             </p>
           </div>
+          <Link to={`/course-detail/${course?._id}`}>
           <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2 rounded-lg transition-all hover:scale-105">
-            {course?.studentsCount > 0 ? "Continue" : "Enroll Now"}
+            {course?.enrolledStudents > 0 ? "Continue" : "Enroll Now"}
           </Button>
+          </Link>
         </CardFooter>
       </Card>
     </div>
