@@ -17,6 +17,9 @@ import EditLecture from './page/admin/lectures/EditLecture';
 import CourseDetail from './page/student/CourseDetail';
 import CourseProgress from './page/student/courseProgress';
 import SearchPage from './page/student/SearchPage';
+import { AdminRoute, AuthenticatedUser, ProtectedRoute } from './components/ProtectedRoutes';
+import PurchaseCourseProtectedRoute from './components/PurchaseCourseProtectedRoute';
+import { ThemeProvider } from './components/ThemeProvider';
 
 const appRouter = createBrowserRouter([
   {
@@ -34,19 +37,19 @@ const appRouter = createBrowserRouter([
       },
       {
         path: 'login',
-        element: <Login/>,
+        element: <AuthenticatedUser><Login/></AuthenticatedUser> ,
       },
       {
         path: 'my-learning',
-        element: <MyLearning/>,
+        element: <ProtectedRoute><MyLearning/></ProtectedRoute>,
       },
       {
         path: 'profile',
-        element: <Profile/>,
+        element: <ProtectedRoute><Profile/></ProtectedRoute>,
       },
       {
         path: 'course/search',
-        element: <SearchPage/>,
+        element: <ProtectedRoute><SearchPage/></ProtectedRoute>,
       },
       {
         path: 'course',
@@ -54,15 +57,25 @@ const appRouter = createBrowserRouter([
       },
       {
         path: 'course-detail/:courseId',
-        element: <CourseDetail/>,
+        element: <ProtectedRoute><CourseDetail/></ProtectedRoute>,
       },
       {
         path: 'course-progress/:courseId',
-        element: <CourseProgress/>,
+        element: (
+        <ProtectedRoute>
+          {/* <PurchaseCourseProtectedRoute> */}
+            <CourseProgress/>
+          {/* </PurchaseCourseProtectedRoute> */}
+        </ProtectedRoute>
+        ),
       },
       {
         path: 'dashboard',
-        element: <Sidebar />,
+        element: (
+        // <AdminRoute>
+          <Sidebar/>
+        // </AdminRoute>
+        ),
         children: [
           {
             path: 'instructor-dashboard',
@@ -91,9 +104,7 @@ const appRouter = createBrowserRouter([
           {
             path: 'courses/:courseId/modules/:moduleId/lecture/:lectureId',
             element: <EditLecture />,
-          },
-          
-          
+          },    
         ]
       },
     ],
@@ -101,7 +112,13 @@ const appRouter = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={appRouter} />;
+  return (
+    <main>
+      <ThemeProvider>
+        <RouterProvider router={appRouter} />
+      </ThemeProvider>
+    </main>
+);
 }
 
 export default App;
