@@ -500,3 +500,45 @@ export const togglePublishCourse = async (req, res) => {
     })
   }
 }
+
+// Submit Course Rating
+export const submitCourseRating = async (req, res) => {
+  try {
+    const userId = req.id;                  
+    const { courseId } = req.params;
+    const { rating, comment } = req.body;
+
+    // validate
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be 1–5." });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: "Course not found." });
+
+    // remove any existing rating by this user
+    course.ratings = course.ratings.filter(r => r.user.toString() !== userId);
+
+    // push new rating
+    course.ratings.push({ user: userId, rating, comment });
+    await course.save();
+
+    return res.status(200).json({ message: "Rating submitted.", ratings: course.ratings });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error." });
+  }
+};
+
+// Get Course Ratings
+export const getCourseRatings = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const course = await Course.findById(courseId).populate("ratings.user", "name photoUrl");
+    if (!course) return res.status(404).json({ message: "Course not found." });
+    return res.status(200).json({ ratings: course.ratings, averageRating: course.averageRating });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error." });
+  }
+};
