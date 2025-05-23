@@ -9,14 +9,16 @@ import {
     removeLecture, editLecture,
     togglePublishCourse,
     getPublishedCourses,
-    searchCourse} from "../Controller/courseController.js";
+    searchCourse,
+    submitCourseRating,
+    getCourseRatings} from "../Controller/courseController.js";
 
 const router = express.Router();
 
 // Course Routes
 router.post("/", isAuthenticated, upload.single("courseThumbnail"), createCourse); // Correct field name
 router.get("/search", isAuthenticated, searchCourse); // Search Course
-router.get("/published-courses", getPublishedCourses); // Corrected route for published courses
+router.get("/published-courses",  getPublishedCourses); // Corrected route for published courses
 router.get("/", isAuthenticated, getCreatorCourses); // Corrected route for creator courses
 router.put("/:courseId", isAuthenticated, upload.single("courseThumbnail"), editCourse); // Correct method (PUT)
 router.get("/:courseId", isAuthenticated, getCourseById);
@@ -36,6 +38,10 @@ router.get("/lecture/:lectureId", isAuthenticated, getLectureById);
 
 // Toggle publish status of a course
 router.patch("/:courseId", isAuthenticated, togglePublishCourse); 
+
+// Ratings
+router.post("/:courseId/rate", isAuthenticated, submitCourseRating);
+router.get("/:courseId/ratings", getCourseRatings);
 
 
 export default router;
