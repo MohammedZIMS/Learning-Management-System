@@ -1,13 +1,12 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import React from "react";
 
 const Course = ({ course }) => {
-  // Calculate rating display
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
     return Array(5).fill(0).map((_, i) => (
@@ -19,8 +18,6 @@ const Course = ({ course }) => {
       />
     ));
   };
-
-
 
   return (
     <div className="w-full max-w-sm">
@@ -40,13 +37,16 @@ const Course = ({ course }) => {
 
         {/* Course Content */}
         <CardContent className="p-5 space-y-4">
-          <h1 title={course?.courseTitle} className="font-bold text-xl hover:text-blue-600 transition-colors cursor-pointer truncate">
+          <h1
+            title={course?.courseTitle}
+            className="font-bold text-xl hover:text-blue-600 transition-colors cursor-pointer truncate"
+          >
             <Link to={`/course-detail/${course?._id}`}>
               {course?.courseTitle || "Course Title"}
             </Link>
           </h1>
 
-          {/* Instructor Details */}
+          {/* Instructor + Rating */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
@@ -59,42 +59,42 @@ const Course = ({ course }) => {
                 </AvatarFallback>
               </Avatar>
               <h2 className="font-medium text-sm text-gray-600 dark:text-gray-300">
-                {course?.creator?.name || "Instructor Name"}
+                {course?.creator?.name || "Instructor"}
               </h2>
             </div>
 
-            {/* Rating */}
-            {/* <div className="flex items-center text-yellow-500">
+            {/* Rating Stars */}
+            <div className="flex items-center text-yellow-500">
               {renderStars(course?.averageRating || 0)}
               <span className="ml-1 text-sm text-gray-500">
-                ({course?.averageRating?.toFixed(1) || 0.0})
+                ({course?.averageRating?.toFixed(1) || "0.0"})
               </span>
-            </div> */}
+            </div>
           </div>
 
-          {/* Course Description */}
+          {/* Description */}
           <Link to={`/course-detail/${course?._id}`}>
-          <div
-            className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3"
-            dangerouslySetInnerHTML={{ __html: course?.description }}
+            <div
+              className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3"
+              dangerouslySetInnerHTML={{ __html: course?.description }}
             />
           </Link>
         </CardContent>
 
-        {/* Price and Enrollment */}
+        {/* Price and Button */}
         <CardFooter className="flex justify-between items-center p-5 border-t border-gray-200 dark:border-gray-700">
           <div className="space-y-1">
             <span className="text-xl font-bold text-blue-600">
               ৳{course?.coursePrice}
             </span>
             <p className="text-sm text-gray-500">
-              {course?.enrolledStudents} students enrolled
+              {course?.enrolledStudents?.length || 0} students
             </p>
           </div>
           <Link to={`/course-detail/${course?._id}`}>
-          <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2 rounded-lg transition-all hover:scale-105">
-            {course?.enrolledStudents > 0 ? "Continue" : "Enroll Now"}
-          </Button>
+            <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2 rounded-lg transition-all hover:scale-105">
+              More Details
+            </Button>
           </Link>
         </CardFooter>
       </Card>
