@@ -1,72 +1,43 @@
-import CourseRatings from '@/components/CourseRatings';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  useGetCouseLectureModuleQuery
-} from '@/features/api/courseApi';
-import {
-  useCompleteCourseMutation,
-  useGetCourseProgressQuery,
-  useInCompleteCourseMutation,
-  useUpdateLectureProgressMutation
-} from '@/features/api/courseProgressApi';
-import {
-  CheckCircle2,
-  CirclePlay,
-  Clock,
-  ChevronDown,
-  CheckCircle
-} from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useGetCouseLectureModuleQuery } from '@/features/api/courseApi';
+import { useCompleteCourseMutation, useGetCourseProgressQuery, useInCompleteCourseMutation, useUpdateLectureProgressMutation } from '@/features/api/courseProgressApi';
+import { CheckCircle2, CirclePlay, ChevronDown, CheckCircle, Clock, BookOpen, Video } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import CourseRatings from '@/components/CourseRatings';
 
 const CourseProgress = () => {
-  // Router hooks
   const { courseId } = useParams();
   const navigate = useNavigate();
-
-  // State management
   const [expandedModules, setExpandedModules] = useState({});
   const [currentLecture, setCurrentLecture] = useState(null);
 
-  // Data fetching hooks
+  // Data fetching
   const { data, isLoading, isError, refetch } = useGetCourseProgressQuery(courseId);
   const [updateLectureProgress] = useUpdateLectureProgressMutation();
-  const [completeCourse, { data: markCompleteData, isSuccess: completedSuccess }] = useCompleteCourseMutation();
-  const [inCompleteCourse, { data: markIncompleteData, isSuccess: incompletedSuccess }] = useInCompleteCourseMutation();
-  const {
-    data: moduleData,
-    isLoading: modulesLoading,
-    error: modulesError
-  } = useGetCouseLectureModuleQuery(courseId);
+  const [completeCourse] = useCompleteCourseMutation();
+  const [inCompleteCourse] = useInCompleteCourseMutation();
+  const { data: moduleData, isLoading: modulesLoading } = useGetCouseLectureModuleQuery(courseId);
 
-  // Effect for handling completion status changes
   useEffect(() => {
-    if (completedSuccess) {
-      refetch();
-      toast.success(markCompleteData.message);
+    if (data?.data?.Completed) {
+      toast.success("Course completed successfully!");
     }
-    if (incompletedSuccess) {
-      refetch();
-      toast.success(markIncompleteData.message);
-    }
-  }, [completedSuccess, incompletedSuccess]);
+  }, [data?.data?.Completed]);
 
-  // Loading and error states
   if (isLoading || modulesLoading) return <div className="text-center mt-20">Loading course...</div>;
-  if (isError || modulesError || !data?.data) return <div className="text-center mt-20 text-red-500">Course not found.</div>;
+  if (isError || !data?.data) return <div className="text-center mt-20 text-red-500">Course not found.</div>;
 
-  // Extracted data
-  const courseDetails = data.data.courseDetails;
-  const progress = data.data.progress || [];
-  const completed = data.data.Completed || false;
+  const { courseDetails, progress, Completed: completed } = data.data;
   const modules = moduleData?.modules || [];
+  const totalLectures = modules.reduce((acc, m) => acc + (m.lectures?.length || 0), 0);
 
   // Helper functions
-  const toggleModule = (index) => {
-    setExpandedModules(prev => ({ ...prev, [index]: !prev[index] }));
+  const toggleModule = (moduleId) => {
+    setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
   };
 
   const isLectureCompleted = (lectureId) => {
@@ -84,160 +55,163 @@ const CourseProgress = () => {
   };
 
   const handleCompleteCourse = async () => {
-    await completeCourse(courseId);
+    try {
+      await completeCourse(courseId).unwrap();
+      toast.success("Course marked as completed!");
+    } catch (error) {
+      toast.error("Failed to complete course");
+    }
   };
 
   const handleInCompleteCourse = async () => {
-    await inCompleteCourse(courseId);
+    try {
+      await inCompleteCourse(courseId).unwrap();
+      toast.success("Course marked as incomplete");
+    } catch (error) {
+      toast.error("Failed to update course status");
+    }
   };
 
-  // Derived values
-  const allLectures = modules.flatMap(mod => mod.lectures || []);
-  const current = currentLecture || modules?.[0]?.lectures?.[0];
-  const lectureIndex = allLectures.findIndex((lec) => lec._id === current?._id);
+  const current = currentLecture || modules[0]?.lectures[0];
+  const lectureIndex = modules.flatMap(m => m.lectures).findIndex(l => l._id === current?._id);
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4 md:px-8 mt-20">
-      {/* Course Header Section */}
-      <div className="grid gap-6 mb-12">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-            {courseDetails.courseTitle}
-          </h1>
-          <div className="flex items-center gap-4 text-muted-foreground">
-            <div className="flex items-center gap-2">
-              {/* <Clock className="h-5 w-5 text-primary" /> */}
-              {/* <span>{courseDetails.duration || 0}h total duration</span> */}
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      {/* Course Header */}
+      <div className="mb-8 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+          <div className="space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+              {courseDetails.courseTitle}
+            </h1>
+            <div className="flex items-center gap-4 text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <BookOpen size={18} />
+                <span>{modules.length} Modules</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Video size={18} />
+                <span>{totalLectures} Lectures</span>
+              </div>
+              {/* <div className="flex items-center gap-2">
+                <Clock size={18} />
+                <span>{courseDetails.duration}h Total</span>
+              </div> */}
             </div>
-            <Badge variant="secondary" className="capitalize shadow-sm">
-              {courseDetails.courseLevel || "Beginner"}
-            </Badge>
           </div>
-        </div>
-        
-        {/* Completion Status Button */}
-        <div className="flex justify-end">
+          
           <Button
             onClick={completed ? handleInCompleteCourse : handleCompleteCourse}
             variant={completed ? "outline" : "default"}
-            className="gap-2 shadow-md hover:shadow-lg transition-shadow"
+            className="gap-2 shadow-lg hover:shadow-xl"
           >
             {completed ? (
               <>
                 <CheckCircle className="h-5 w-5" />
-                <span>Course Completed</span>
+                <span>Completed</span>
               </>
             ) : (
               <>
                 <CheckCircle2 className="h-5 w-5" />
-                <span>Mark as Completed</span>
+                <span>Mark Complete</span>
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      {/* Main Content */}
+      <div className="grid lg:grid-cols-[1fr_400px] gap-8">
         {/* Video Player Section */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="shadow-xl border-0">
-            <div className="aspect-video bg-gray-900 rounded-t-lg overflow-hidden">
-              <video
-                src={current?.mediaUrl}
-                controls
-                className="w-full h-full object-cover"
-                onPlay={() => handleLectureProgress(current?._id)}
-              />
-            </div>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex justify-between items-start">
-                <h3 className="text-2xl font-semibold">
+        <div className="space-y-6">
+          <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-xl">
+            <video
+              src={current?.mediaUrl}
+              controls
+              className="w-full aspect-video object-cover"
+              onPlay={() => handleLectureProgress(current?._id)}
+            />
+            <div className="p-6 bg-white dark:bg-gray-800">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold">
                   {current?.lectureTitle || "Select a lecture"}
                 </h3>
-                <Badge variant="outline" className="text-sm">
-                  Lecture {lectureIndex + 1} of {allLectures.length}
+                <Badge variant="outline">
+                  Lecture {lectureIndex + 1}/{modules.flatMap(m => m.lectures).length}
                 </Badge>
               </div>
-              {/* <p className="text-muted-foreground">
-                {current?.description || "No description available"}
-              </p> */}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {/* Course Ratings */}
+          <div className="mt-8">
+            <CourseRatings courseId={courseId} />
+          </div>
         </div>
 
         {/* Curriculum Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="shadow-xl border-0 sticky top-28 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-100px)] lg:overflow-y-auto">
+          <Card className="shadow-xl">
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">Course Content</h2>
               
               {/* Modules Accordion */}
-              <div className="space-y-4">
-                {modules.map((module, index) => (
-                  <Card key={index} className="overflow-hidden">
+              <div className="space-y-3">
+                {modules.map((module) => (
+                  <div key={module._id} className="border rounded-lg overflow-hidden dark:border-gray-700">
                     <button
-                      onClick={() => toggleModule(index)}
-                      className="w-full p-4 hover:bg-accent transition-colors"
+                      onClick={() => toggleModule(module._id)}
+                      className="w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex justify-between items-center"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <h3 className="font-semibold">{module.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {module.lectures?.length || 0} lectures
-                          </p>
-                        </div>
-                        <ChevronDown className={`h-5 w-5 transition-transform ${
-                          expandedModules[index] ? 'rotate-180' : ''
-                        }`} />
+                      <div className="text-left">
+                        <h3 className="font-semibold">{module.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {module.lectures?.length} lectures • {module.duration}h
+                        </p>
                       </div>
+                      <ChevronDown className={`h-5 w-5 transition-transform ${
+                        expandedModules[module._id] ? 'rotate-180' : ''
+                      }`} />
                     </button>
 
                     {/* Lectures List */}
-                    {expandedModules[index] && (
-                      <div className="border-t">
-                        {module.lectures?.map((lecture, lIdx) => (
+                    {expandedModules[module._id] && (
+                      <div className="border-t dark:border-gray-700">
+                        {module.lectures?.map((lecture) => (
                           <div
-                            key={lIdx}
+                            key={lecture._id}
                             onClick={() => handleSelectLecture(lecture)}
-                            className={`p-4 cursor-pointer transition-colors ${
+                            className={`p-4 cursor-pointer transition-all ${
                               lecture._id === current?._id 
-                                ? 'bg-primary/10 border-l-4 border-primary'
-                                : 'hover:bg-accent'
+                                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                                : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 {isLectureCompleted(lecture._id) ? (
-                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                                 ) : (
-                                  <CirclePlay className="h-5 w-5 text-muted-foreground" />
+                                  <CirclePlay className="h-5 w-5 text-muted-foreground shrink-0" />
                                 )}
                                 <span className="text-sm">
                                   {lecture.lectureTitle}
                                 </span>
                               </div>
-                              {lecture._id === current?._id && (
-                                <Badge variant="secondary" className="animate-pulse">
-                                  Playing
-                                </Badge>
-                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {lecture.duration || 0}m
+                              </span>
                             </div>
                           </div>
                         ))}
                       </div>
                     )}
-                  </Card>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      {/* Render Stars Input display */}
-      <div className='mt-12'>
-        <CourseRatings courseId={courseId} />
       </div>
     </div>
   );
