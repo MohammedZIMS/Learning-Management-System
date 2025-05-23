@@ -16,6 +16,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { 
+  Home,
+  BookOpen,
+  User,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  UserPlus
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { School, Menu } from "lucide-react";
 import React, { useEffect } from "react";
@@ -73,31 +82,36 @@ const Navbar = () => {
                 <DropdownMenuSeparator />
                 <Link to="/">
                   <DropdownMenuItem className="cursor-pointer">
+                    <Home size={20} />
                     Home
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/my-learning">
                   <DropdownMenuItem className="cursor-pointer">
+                    <BookOpen size={20} />
                     My Learning
                   </DropdownMenuItem>
                 </Link>
                 <Link to="/profile">
                   <DropdownMenuItem className="cursor-pointer">
+                    <User size={20} />
                     Profile
                   </DropdownMenuItem>
                 </Link>
                 {user?.role === "instructor" ? (
                   <Link to="/dashboard/instructor-dashboard">
                     <DropdownMenuItem className="cursor-pointer">
-                      Instructor Dashboard
+                      <LayoutDashboard size={20} />
+                      Dashboard
                     </DropdownMenuItem>
                   </Link>
                 ) : (
-                  <Link to="/dashboard">
-                    <DropdownMenuItem className="cursor-pointer">
-                      Student Dashboard
-                    </DropdownMenuItem>
-                  </Link>
+                  // <Link to="/dashboard">
+                  //   <DropdownMenuItem className="cursor-pointer">
+                  //     Student Dashboard
+                  //   </DropdownMenuItem>
+                  // </Link>
+                  <></>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
@@ -105,6 +119,7 @@ const Navbar = () => {
                     onClick={logoutHandler} 
                     className="bg-red-500 hover:bg-red-600 text-white w-full"
                   >
+                    <LogOut size={18} />
                     Logout
                   </Button>
                 </DropdownMenuItem>
@@ -140,64 +155,126 @@ const MobileNavbar = ({ user, logoutHandler }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="icon" className="rounded-full hover:bg-gray-200" variant="outline">
-          <Menu />
+        <Button size="icon" variant="ghost" className="rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col dark:bg-gray-900 dark:text-white">
-        <SheetHeader className="flex flex-row items-center justify-between mt-2">
-          <SheetTitle className="dark:text-white">Shikha Bazar</SheetTitle>
-        </SheetHeader>
-        <Separator className="my-4 dark:border-gray-700" />
-        
-        <nav className="flex flex-col space-y-4 flex-grow">
-          <SheetClose asChild>
-            <Link to="/" className="hover:text-blue-500">Home</Link>
-          </SheetClose>
-          
-          {user && (
-            <>
-              <SheetClose asChild>
-                <Link to="/my-learning" className="hover:text-blue-500">My Learning</Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link to="/profile" className="hover:text-blue-500">Profile</Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link to={user?.role === "instructor" ? "/dashboard" : "/dashboard"} 
-                      className="hover:text-blue-500">
-                  Dashboard
-                </Link>
-              </SheetClose>
-            </>
-          )}
-        </nav>
+      <SheetContent className="flex flex-col dark:bg-gray-900 p-0">
+        {/* User Profile Section */}
+        {user && (
+          <div className="flex items-center gap-4 p-6 border-b dark:border-gray-800">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={user.photoUrl} />
+              <AvatarFallback>
+                {user?.name?.split(" ").map((n) => n[0]).join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="font-semibold dark:text-white">{user.name}</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {user.role?.toUpperCase()}
+              </p>
+            </div>
+          </div>
+        )}
 
-        <SheetFooter className="mt-auto">
-          {user ? (
+        {/* Navigation Links */}
+        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="space-y-1">
             <SheetClose asChild>
-              <Button 
-                onClick={logoutHandler}
-                className="bg-red-500 hover:bg-red-600 text-white w-full"
+              <Link 
+                to="/" 
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
               >
-                Logout
-              </Button>
+                <Home size={20} />
+                <span>Home</span>
+              </Link>
             </SheetClose>
+
+            {user && (
+              <>
+                <SheetClose asChild>
+                  <Link
+                    to="/my-learning"
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  >
+                    <BookOpen size={20} />
+                    <span>My Learning</span>
+                  </Link>
+                </SheetClose>
+
+                <SheetClose asChild>
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  >
+                    <User size={20} />
+                    <span>Profile</span>
+                  </Link>
+                </SheetClose>
+
+                <SheetClose asChild>
+                  {user?.role === "instructor" ? (
+                    <Link
+                    to={user.role === 'instructor' ? '/dashboard/instructor-dashboard' : '/'}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                  >
+                    <LayoutDashboard size={20} />
+                    <span>Dashboard</span>
+                  </Link>
+                  ):(
+                    <></>
+                  )
+                }
+                </SheetClose>
+              </>
+            )}
+          </nav>
+
+          {/* Dark Mode Toggle */}
+          <div className="p-3 mt-4">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+              <span className="text-sm">Dark Mode</span>
+              <DarkMode />
+            </div>
+          </div>
+        </div>
+
+        {/* Auth Section */}
+        <div className="p-4 border-t dark:border-gray-800">
+          {user ? (
+            <Button 
+              onClick={logoutHandler}
+              variant="ghost"
+              className="w-full gap-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400"
+            >
+              <LogOut size={18} />
+              <span>Log Out</span>
+            </Button>
           ) : (
-            <div className="flex flex-col gap-2 w-full">
+            <div className="grid gap-2">
               <SheetClose asChild>
-                <Button onClick={() => navigate("/login")} className="w-full">
-                  Login
+                <Button 
+                  onClick={() => navigate('/login')}
+                  className="w-full gap-2"
+                >
+                  <LogIn size={18} />
+                  <span>Sign In</span>
                 </Button>
               </SheetClose>
               <SheetClose asChild>
-                <Button onClick={() => navigate("/login")} variant="outline" className="w-full">
-                  Signup
+                <Button 
+                  onClick={() => navigate('/register')}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  <UserPlus size={18} />
+                  <span>Create Account</span>
                 </Button>
               </SheetClose>
             </div>
           )}
-        </SheetFooter>
+        </div>
       </SheetContent>
     </Sheet>
   );
