@@ -1,3 +1,4 @@
+import CourseRatings from '@/components/CourseRatings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -105,8 +106,8 @@ const CourseProgress = () => {
           </h1>
           <div className="flex items-center gap-4 text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <span>{courseDetails.duration || 0}h total duration</span>
+              {/* <Clock className="h-5 w-5 text-primary" /> */}
+              {/* <span>{courseDetails.duration || 0}h total duration</span> */}
             </div>
             <Badge variant="secondary" className="capitalize shadow-sm">
               {courseDetails.courseLevel || "Beginner"}
@@ -158,9 +159,9 @@ const CourseProgress = () => {
                   Lecture {lectureIndex + 1} of {allLectures.length}
                 </Badge>
               </div>
-              <p className="text-muted-foreground">
+              {/* <p className="text-muted-foreground">
                 {current?.description || "No description available"}
-              </p>
+              </p> */}
             </CardContent>
           </Card>
         </div>
@@ -232,6 +233,11 @@ const CourseProgress = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Render Stars Input display */}
+      <div className='mt-12'>
+        <CourseRatings courseId={courseId} />
       </div>
     </div>
   );
