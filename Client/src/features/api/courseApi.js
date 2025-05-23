@@ -159,6 +159,18 @@ export const courseApi = createApi({
       invalidatesTags: ["Refetch_Creator_Course"],
     }),
 
+    getCourseRatings: builder.query({
+      query: (courseId) => `/${courseId}/ratings`,
+      providesTags: (result, error, courseId) => [{ type: "Ratings", id: courseId }],
+    }),
+    submitCourseRating: builder.mutation({
+      query: ({ courseId, rating, comment }) => ({
+        url: `/${courseId}/rate`,
+        method: "POST",
+        body: { rating, comment },
+      }),
+      invalidatesTags: (result, error, { courseId }) => [{ type: "Ratings", id: courseId }],
+    }),
   }),
 });
 
@@ -178,4 +190,6 @@ export const {
   useRemoveLectureMutation,
   useGetLectureByIdQuery,
   usePublishCourseMutation,
+  useGetCourseRatingsQuery,
+  useSubmitCourseRatingMutation,
 } = courseApi;
