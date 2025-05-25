@@ -88,7 +88,7 @@ const Course = ({ course }) => {
               ৳{course?.coursePrice}
             </span>
             <p className="text-sm text-gray-500">
-              {course?.enrolledStudents?.length || 0} students
+              Price
             </p>
           </div>
           <Link to={`/course-detail/${course?._id}`}>
