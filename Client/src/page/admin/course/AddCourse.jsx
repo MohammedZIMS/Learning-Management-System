@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCreateCourseMutation } from '@/features/api/courseApi'; // Correct hook name
+import RichTextEditor from '@/components/RichTextEditor';
 
 const AddCourse = () => {
   const navigate = useNavigate();
@@ -118,6 +119,9 @@ const AddCourse = () => {
           />
         </div>
 
+
+
+
         {/* Course Category */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Category</Label>
@@ -143,6 +147,7 @@ const AddCourse = () => {
         {/* Course Description */}
         <div className="space-y-2">
           <Label className="text-sm font-medium dark:text-gray-300">Course Description</Label>
+          {/* <RichTextEditor input={input} setInput={setInput} /> */}
           <Textarea
             name="description"
             value={input.description}
