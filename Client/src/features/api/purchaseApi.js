@@ -30,6 +30,14 @@ export const purchaseApi = createApi({
             }),
         }),
 
+        confirmPurchase: builder.query({
+            query: () => ({
+                url: `/confirm-purchase`,
+                method: "GET"
+            })
+
+        }),
+
         // Route to get course details with purchase status
         getCourseDetailsWithPurchaseStatus: builder.query({
             query: (courseId) => ({
