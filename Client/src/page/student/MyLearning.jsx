@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { useLoadUserQuery } from '@/features/api/authApi';
+import { useGetPublishedCoursesQuery } from '@/features/api/courseApi';
 
 const MyLearning = () => {
     const {data, isLoading} = useLoadUserQuery();
     const myLearning = data.user.enrolledCourses || [];
+    
 
     const navigator = useNavigate();
   return (
