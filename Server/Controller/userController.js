@@ -2,11 +2,10 @@ import { User } from "../Models/userModel.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../Utils/generateToken.js";
 import { uploadMedia, deleteMediaFromCloudinary } from "../Utils/cloudinary.js"; // Fixed missing import
+import { Course } from "../Models/courseModel.js";
 
 /**
- * @desc    Register a new user
- * @route   POST /api/auth/register
- * @access  Public
+ Register a new user
  */
 export const register = async (req, res) => {
     try {
@@ -53,8 +52,6 @@ export const register = async (req, res) => {
 
 /**
  * Authenticate user & get token
- * POST /api/auth/login
- * Public
  */
 export const login = async (req, res) => {
     try {
@@ -99,9 +96,8 @@ export const login = async (req, res) => {
 }
 
 /**
- * @desc    Logout user / clear cookie
- * @route   POST /api/auth/logout
- * @access  Private
+Logout user / clear cookie
+ 
  */
 export const logout = async (_, res) => {
     try {
@@ -127,15 +123,15 @@ export const logout = async (_, res) => {
 }
 
 /**
- * @desc    Get user profile
- * @route   GET /api/users/profile
- * @access  Private
+Get user profile
  */
 export const getUserProfile = async (req, res) => {
     try {
         const userId = req.id; // Assuming authentication middleware sets req.id
         
         const user = await User.findById(userId).select("-password").populate("enrolledCourses");
+        const courses = await Course.find({ isPublished: true }).populate("creator", "name photoUrl");
+        
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -158,9 +154,7 @@ export const getUserProfile = async (req, res) => {
 }
 
 /**
- * @desc    Update user profile
- * @route   PUT /api/users/profile
- * @access  Private
+Update user profile
  */
 export const updateProfile = async (req, res) => {
     try {
