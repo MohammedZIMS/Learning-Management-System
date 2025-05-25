@@ -8,7 +8,8 @@ const router = express.Router();
 router.post('/checkout/create-checkout-session', isAuthenticated, createCheckoutSession);
 
 // Stripe requires raw body for signature verification
-router.route("/webhook").post(express.raw({type:"application/json"}), stripeWebhook);
+// This middleware gives us the raw request body needed for signature verification
+router.post( '/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 // Route to get course details with purchase status
 router.get('/course/:courseId/detail-with-status',isAuthenticated, getCourseDetailsWithPurchaseStatus);
