@@ -5,15 +5,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useGetCouseLectureModuleQuery } from '@/features/api/courseApi';
 import { useCompleteCourseMutation, useGetCourseProgressQuery, useInCompleteCourseMutation, useUpdateLectureProgressMutation } from '@/features/api/courseProgressApi';
 import { CheckCircle2, CirclePlay, ChevronDown, CheckCircle, Clock, BookOpen, Video } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import CourseRatings from '@/components/CourseRatings';
+import axios from 'axios';
 
 const CourseProgress = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [expandedModules, setExpandedModules] = useState({});
   const [currentLecture, setCurrentLecture] = useState(null);
+
+  const [searchParams] =useSearchParams();
+  const sessionId = searchParams.get('sessionId');
+
+  useEffect(() => {
+    const confirmPurchase = async () => {
+      if (sessionId){
+        confirmPurchase();
+      }
+    }
+  }, [sessionId])
 
   // Data fetching
   const { data, isLoading, isError, refetch } = useGetCourseProgressQuery(courseId);
@@ -166,7 +178,7 @@ const CourseProgress = () => {
                       <div className="text-left">
                         <h3 className="font-semibold">{module.title}</h3>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {module.lectures?.length} lectures • {module.duration}h
+                          {module.lectures?.length} lectures 
                         </p>
                       </div>
                       <ChevronDown className={`h-5 w-5 transition-transform ${
@@ -199,7 +211,7 @@ const CourseProgress = () => {
                                 </span>
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {lecture.duration || 0}m
+                                play
                               </span>
                             </div>
                           </div>
