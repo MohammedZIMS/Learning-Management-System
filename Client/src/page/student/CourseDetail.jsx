@@ -223,13 +223,13 @@ const CourseDetail = () => {
                       amount={course.coursePrice}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                     />
-                    <Button 
+                    {/* <Button 
                       variant="outline" 
                       size="lg"
                       className="w-full"
                     >
                       Add to Cart
-                    </Button>
+                    </Button> */}
                   </>
                 )}
               </div>
