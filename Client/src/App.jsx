@@ -20,6 +20,7 @@ import SearchPage from './page/student/SearchPage';
 import { AdminRoute, AuthenticatedUser, ProtectedRoute } from './components/ProtectedRoutes';
 import PurchaseCourseProtectedRoute from './components/PurchaseCourseProtectedRoute';
 import { ThemeProvider } from './components/ThemeProvider';
+import Testimonials from './components/Testiomonials';
 
 const appRouter = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ const appRouter = createBrowserRouter([
           <>
             <HeroSection />
             <Courses/>
+            {/* <Testimonials/> */}
           </>
         ),
       },
