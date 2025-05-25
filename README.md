@@ -1,6 +1,4 @@
 # Learning Management System (LMS)
-
-![LMS](https://img.shields.io/badge/Status-Complete-green)  
 A modern Learning Management System designed to streamline online education delivery, course management, and communication between students and instructors.
 
 ## Description
