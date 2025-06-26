@@ -212,11 +212,35 @@ const CourseTab = () => {
                                             <SelectLabel className="text-gray-500 dark:text-gray-400">Categories</SelectLabel>
                                             <SelectItem value="data-science">Data Science</SelectItem>
                                             <SelectItem value="artificial-intelligence">Artificial Intelligence</SelectItem>
-                                            <SelectItem value="frontend">Frontend Development</SelectItem>
-                                            <SelectItem value="fullstack">Fullstack Development</SelectItem>
-                                            <SelectItem value="mern">MERN Stack Development</SelectItem>
+                                            <SelectItem value="frontend-development">Frontend Development</SelectItem>
+                                            <SelectItem value="fullstack-development">Fullstack Development</SelectItem>
+                                            <SelectItem value="mern-stack-development">MERN Stack Development</SelectItem>
+                                            <SelectItem value="backend-development">Backend Development</SelectItem>
+                                            <SelectItem value="html">HTML</SelectItem>
+                                            <SelectItem value="css">CSS</SelectItem>
                                             <SelectItem value="javascript">JavaScript</SelectItem>
+                                            <SelectItem value="typescript">TypeScript</SelectItem>
+                                            <SelectItem value="node-js">Node.js</SelectItem>
+                                            <SelectItem value="nextjs">Next JS</SelectItem>
                                             <SelectItem value="python">Python</SelectItem>
+                                            <SelectItem value="docker">Docker</SelectItem>
+                                            <SelectItem value="react">React</SelectItem>
+                                            <SelectItem value="aws">AWS</SelectItem>
+                                            <SelectItem value="graphql">GraphQL</SelectItem>
+                                            <SelectItem value="kubernetes">Kubernetes</SelectItem>
+                                            <SelectItem value="sql">SQL</SelectItem>
+                                            <SelectItem value="mongodb">MongoDB</SelectItem>
+                                            <SelectItem value="postgresql">PostgreSQL</SelectItem>
+                                            <SelectItem value="rest-api">REST API</SelectItem>
+                                            <SelectItem value="git">Git</SelectItem>
+                                            <SelectItem value="redux">Redux</SelectItem>
+                                            <SelectItem value="nestjs">NestJS</SelectItem>
+                                            <SelectItem value="machine-learning">Machine Learning</SelectItem>
+                                            <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
+                                            <SelectItem value="ui-ux">UI/UX Design</SelectItem>
+                                            <SelectItem value="react-native">React Native</SelectItem>
+                                            <SelectItem value="web3">Web3</SelectItem>
+                                            <SelectItem value="blockchain">Blockchain</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
