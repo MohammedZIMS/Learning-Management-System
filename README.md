@@ -48,5 +48,5 @@ This LMS is a scalable, user-friendly platform that allows instructors to create
 
 1. **Clone the repository**  
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/MohammedZIMS/Learning-Management-System.git
    cd lms-project
