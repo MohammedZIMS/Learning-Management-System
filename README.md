@@ -7,7 +7,8 @@ This LMS is a scalable, user-friendly platform that allows instructors to create
 
 **Keywords**: LMS, online education, e-learning, React, Node.js, MongoDB, Stripe.
 
-![Home Page Hero Sction](GUI/Home Page Hero Sction.PNG)
+# GUI
+![Home Page Hero Sction](https://github.com/MohammedZIMS/Learning-Management-System/blob/main/GUI/Home%20Page%20Hero%20Sction.PNG?raw=true)
 
 ## Features
 
